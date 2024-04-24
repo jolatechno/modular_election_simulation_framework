@@ -18,3 +18,11 @@ class AgentWiseUpdateFunctionTemplate {
 public:
 	virtual void operator()(Agent &agent) const {}
 };
+
+template<class Agent>
+class AgentSerializerTemplate {
+public:
+	virtual size_t size() const { return 0; }
+	virtual std::string write(const Agent &agent) const { return ""; }
+	virtual void read(Agent &agent, const std::string&) const {}
+};
