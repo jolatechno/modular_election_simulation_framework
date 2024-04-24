@@ -68,7 +68,7 @@ int main() {
 				counties_election_results = network->get_election_results(counties, election);
 				stuborness_results        = network->get_election_results(counties, stuborness_election);
 
-				std::cout << "\n\ntry " << itry+1 << "/" << N_try << ", it " << it << "/" << N_it << ":\n\n";
+				std::cout << "\n\ntry " << itry+1 << "/" << N_try << ", it " << it+1 << "/" << N_it << ":\n\n";
 				std::cout << "network->get_election_results(...) = " << general_election_results->result << " (" << int(general_election_results->proportion*100) << "%)\n";
 				std::cout << "network->get_election_results(counties, ...): \n";
 				for (int couty = 0; couty < counties.size(); couty++) {

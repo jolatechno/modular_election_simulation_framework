@@ -1,5 +1,8 @@
 #pragma once
 
+#include "agent.hpp"
+
+
 class ElectionResultTemplate {
 public:
 	virtual ElectionResultTemplate& operator+=(const ElectionResultTemplate*) { return *this; };
@@ -19,3 +22,5 @@ class ElectionRetroinfluenceTemplate {
 public:
 	virtual void operator()(Agent&, const ElectionResultTemplate*) const {};
 };
+
+class ElectionResultSerializerTemplate : public AgentSerializerTemplate<ElectionResultTemplate> {};
