@@ -58,10 +58,12 @@ int main() {
 	voter_majority_election_result* general_election_results;
 	std::vector<ElectionResultTemplate*> counties_election_results, stuborness_results;
 	for (int itry = 0; itry < N_try; ++itry) {
-		read_agent_states_from_file(network, agent_serializer, file);
+		if (itry > 0) {
+			read_agent_states_from_file(network, agent_serializer, file, "/initial_state");
+		}
 
 		for (int it = 0; it < N_it; ++it) {
-			if (it%n_save == 0) {
+			if (it%n_save == 0 && it > 0) {
 				std::string dir_name = "/states_" + std::to_string(itry) + "_" + std::to_string(it);
 				write_agent_states_to_file(network, agent_serializer, file, dir_name.c_str());
 			}
