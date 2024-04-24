@@ -72,3 +72,19 @@ public:
 		return result;
 	};
 };
+
+template<class Agent>
+class PopulationRenormalizeProportions : public AgentWiseUpdateFunctionTemplate<AgentPopulation<Agent>> {
+public:
+	PopulationRenormalizeProportions() {}
+	void operator()(AgentPopulation<Agent> &agent) const {
+		double normalization_factor = 0.0;
+		for (double &proportion : agent.proportions) {
+			proportion            = std::max(0.d, std::min(1.d, proportion));
+			normalization_factor += proportion;
+		}
+		for (double &proportion : agent.proportions) {
+			proportion /= normalization_factor;
+		}
+	}
+};

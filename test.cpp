@@ -142,6 +142,9 @@ int main() {
 
 
 		population_voter_interaction_function *interaction = new population_voter_interaction_function(20);
+
+		PopulationRenormalizeProportions<voter> *renormalize = new PopulationRenormalizeProportions<voter>();
+
 		for (int i = 0; i < 51; ++i) {
 			if (i%10 == 0) {
 				voter_majority_election_result *result = (voter_majority_election_result*)test->get_election_results(election);
@@ -157,6 +160,7 @@ int main() {
 			}
 
 			test->interact(interaction);
+			test->update_agentwise(renormalize);
 		}
 	}
 
@@ -207,6 +211,8 @@ int main() {
 		voter_stuborn_overtoon_effect                 *overton     = new voter_stuborn_overtoon_effect(     dt, 0.015);
 		voter_stuborn_frustration_effect              *frustration = new voter_stuborn_frustration_effect(  dt, 0.02);
 
+		PopulationRenormalizeProportions<voter_stuborn> *renormalize = new PopulationRenormalizeProportions<voter_stuborn>();
+
 		for (int i = 0; i < 2001; ++i) {
 			if (i%400 == 0) {
 				result = (voter_majority_election_result*)test->get_election_results(election);
@@ -233,6 +239,7 @@ int main() {
 			test->election_retroinfluence(result, frustration);
 			test->election_retroinfluence(counties, results, overton);
 			test->election_retroinfluence(counties, results, frustration);
+			test->update_agentwise(renormalize);
 		}
 	}
 

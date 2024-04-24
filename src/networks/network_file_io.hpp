@@ -31,26 +31,26 @@ void write_network_to_file(const SocialNetworkTemplate<Agent> *network, const ch
 
 
 template<class Agent, class Agent2>
-void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const AgentSerializerTemplate<Agent2> &serializer, H5::H5File &file, const char* directory="/states") {
+void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const AgentSerializerTemplate<Agent2> *serializer, H5::H5File &file, const char* directory="/states") {
 	static_assert(std::is_convertible<Agent2, Agent>::value, "Error: Agent class is not compatible with the one used by AgentSerializerTemplate in read_agent_states_from_file !");
 
 	/* TODO */
 }
 template<class Agent, class Agent2>
-void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const AgentSerializerTemplate<Agent2> &serializer, const char* file_name, const char* directory="/states") {
+void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const AgentSerializerTemplate<Agent2> *serializer, const char* file_name, const char* directory="/states") {
 	H5::H5File file(file_name, H5F_ACC_RDONLY);
 	read_agent_states_from_file(network, serializer, file, directory);
 }
 
 
 template<class Agent, class Agent2>
-void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, const AgentSerializerTemplate<Agent2> &serializer, H5::H5File &file, const char* directory="/states") {
+void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, const AgentSerializerTemplate<Agent2> *serializer, H5::H5File &file, const char* directory="/states") {
 	static_assert(std::is_convertible<Agent, Agent2>::value, "Error: Agent class is not compatible with the one used by AgentSerializerTemplate in read_agent_states_from_file !");
 
 	/* TODO */
 }
 template<class Agent, class Agent2>
-void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, const AgentSerializerTemplate<Agent2> &serializer, const char* file_name, const char* directory="/states") {
+void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, const AgentSerializerTemplate<Agent2> *serializer, const char* file_name, const char* directory="/states") {
 	H5::H5File file(file_name, H5F_ACC_TRUNC);
 	write_agent_states_to_file(network, serializer, file, directory);
 }
