@@ -1,15 +1,16 @@
 #include <iostream>
 
-#include "src/network.hpp"
-#include "src/networks/network_generator.hpp"
-#include "src/networks/network_partition.hpp"
-#include "src/networks/network_util.hpp"
-#include "implementations/voter_model.hpp"
-#include "implementations/voter_model_stuborn.hpp"
-#include "implementations/population_voter_model.hpp"
-#include "implementations/population_voter_model_stuborn.hpp"
-#include "src/agent_population/agent_population.hpp"
-#include "util/util.hpp"
+#include "src/core/network.hpp"
+#include "src/core/networks/network_generator.hpp"
+#include "src/core/networks/network_partition.hpp"
+#include "src/core/networks/network_util.hpp"
+#include "src/core/agent_population/agent_population.hpp"
+#include "src/implementations/voter_model.hpp"
+#include "src/implementations/voter_model_stuborn.hpp"
+#include "src/implementations/population_voter_model.hpp"
+#include "src/implementations/population_voter_model_stuborn.hpp"
+#include "src/util/util.hpp"
+
 
 int main() {
 	std::cout << "VOTER MODEL:\n\n";

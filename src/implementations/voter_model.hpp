@@ -2,8 +2,8 @@
 
 #include <random>
 
-#include "../src/election.hpp"
-#include "../src/agent.hpp"
+#include "../core/election.hpp"
+#include "../core/agent.hpp"
 
 #include "../util/util.hpp"
 

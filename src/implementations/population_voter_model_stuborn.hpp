@@ -2,7 +2,7 @@
 
 #include <random>
 
-#include "../src/agent_population/agent_population.hpp"
+#include "../core/agent_population/agent_population.hpp"
 #include "voter_model_stuborn.hpp"
 
 #include "../util/util.hpp"

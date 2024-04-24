@@ -1,16 +1,17 @@
 #include <iostream>
 
-#include "src/network.hpp"
-#include "src/networks/network_file_io.hpp"
-#include "src/networks/network_generator.hpp"
-#include "src/networks/network_partition.hpp"
-#include "src/networks/network_util.hpp"
-#include "implementations/voter_model.hpp"
-#include "implementations/voter_model_stuborn.hpp"
-#include "implementations/population_voter_model.hpp"
-#include "implementations/population_voter_model_stuborn.hpp"
-#include "src/agent_population/agent_population.hpp"
-#include "util/util.hpp"
+#include "src/core/network.hpp"
+#include "src/core/networks/network_file_io.hpp"
+#include "src/core/networks/network_generator.hpp"
+#include "src/core/networks/network_partition.hpp"
+#include "src/core/networks/network_util.hpp"
+#include "src/core/agent_population/agent_population.hpp"
+#include "src/implementations/voter_model.hpp"
+#include "src/implementations/voter_model_stuborn.hpp"
+#include "src/implementations/population_voter_model.hpp"
+#include "src/implementations/population_voter_model_stuborn.hpp"
+#include "src/util/util.hpp"
+
 
 const size_t N_select               = 10;
 const double dt                     = 0.2;
@@ -23,6 +24,7 @@ const int n_election = 400;
 const int n_save     = 5;
 
 const char* file_name =  "output/test.hdf5";
+
 
 int main() {
 	H5::H5File file(file_name, H5F_ACC_TRUNC);
