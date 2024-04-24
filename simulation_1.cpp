@@ -38,12 +38,14 @@ int main() {
 
 	auto *renormalize = new PopulationRenormalizeProportions<voter_stuborn>();
 
-	auto *serializer = new AgentSerializerTemplate<AgentPopulationVoterStuborn>();
+	// TODO:
+	auto *agent_serializer    = new AgentSerializerTemplate<AgentPopulationVoterStuborn>();
+	auto *election_serializer = new ElectionResultSerializerTemplate();
 
 
 	auto *network = new SocialNetworkTemplate<AgentPopulationVoterStuborn>(800);
 	preferential_attachment(network, 3);
-	write_network_to_file(  network, file);
+	write_network_to_file(network, file);
 
 	std::vector<std::vector<size_t>> counties = random_graphAgnostic_partition_graph(network, 3);
 	write_counties_to_file(counties, file);
@@ -51,22 +53,28 @@ int main() {
 	network_randomize_agent_states_county(network, counties[0], std::vector<double>({0.6, 0.4, 0.1, 0.2}), 100, 200, 0.2, 0.2);
 	network_randomize_agent_states_county(network, counties[1], std::vector<double>({0.4, 0.6, 0.1, 0.2}), 50,  250, 0.2, 0.1);
 	network_randomize_agent_states_county(network, counties[2], std::vector<double>({0.5, 0.5, 0.1, 0.1}), 100, 300, 0.1, 0.2);
-	write_agent_states_to_file(network, serializer, file);
+	write_agent_states_to_file(network, agent_serializer, file, "/initial_state");
 
 	voter_majority_election_result* general_election_results;
 	std::vector<ElectionResultTemplate*> counties_election_results, stuborness_results;
 	for (int itry = 0; itry < N_try; ++itry) {
-		read_agent_states_from_file(network, serializer, file);
+		read_agent_states_from_file(network, agent_serializer, file);
 
 		for (int it = 0; it < N_it; ++it) {
 			if (it%n_save == 0) {
-				/* TODO */
+				std::string dir_name = "/states_" + std::to_string(itry) + "_" + std::to_string(it);
+				write_agent_states_to_file(network, agent_serializer, file, dir_name.c_str());
 			}
 
 			if (it%n_election == 0) {
 				general_election_results  = (voter_majority_election_result*)network->get_election_results(election);
 				counties_election_results = network->get_election_results(counties, election);
 				stuborness_results        = network->get_election_results(counties, stuborness_election);
+
+				std::string dir_name_general  = "/general_election_result_"  + std::to_string(itry) + "_" + std::to_string(it);
+				std::string dir_name_counties = "/counties_election_result_" + std::to_string(itry) + "_" + std::to_string(it);
+				write_election_result_to_file( general_election_results,  election_serializer, file, dir_name_general.c_str());
+				write_election_results_to_file(counties_election_results, election_serializer, file, dir_name_counties.c_str());
 
 				std::cout << "\n\ntry " << itry+1 << "/" << N_try << ", it " << it+1 << "/" << N_it << ":\n\n";
 				std::cout << "network->get_election_results(...) = " << general_election_results->result << " (" << int(general_election_results->proportion*100) << "%)\n";

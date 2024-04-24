@@ -45,6 +45,6 @@ void write_counties_to_file(const std::vector<std::vector<size_t>> &counties, H5
 void write_election_result_to_file(const ElectionResultTemplate *result, const ElectionResultSerializerTemplate *serializer, H5::H5File &file, const char* directory="/election_result") {
 	/* TODO */
 }
-void write_election_results_to_file(const std::vector<const ElectionResultTemplate*> &result, const ElectionResultSerializerTemplate *serializer, H5::H5File &file, const char* directory="/election_results") {
+void write_election_results_to_file(const std::vector<ElectionResultTemplate*> &result, const ElectionResultSerializerTemplate *serializer, H5::H5File &file, const char* directory="/election_results") {
 	/* TODO */
 }
