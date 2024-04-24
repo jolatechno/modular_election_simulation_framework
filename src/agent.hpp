@@ -1,5 +1,8 @@
 #pragma once
 
+#include <variant>
+
+
 class AgentTemplate {
 public:
 	template<typename... Args>
@@ -22,7 +25,9 @@ public:
 template<class Agent>
 class AgentSerializerTemplate {
 public:
-	virtual size_t size() const { return 0; }
-	virtual std::string write(const Agent &agent) const { return ""; }
-	virtual void read(Agent &agent, const std::string&) const {}
+	using variable_type = std::variant<bool, int, unsigned int, long, size_t, float, double>;
+	
+	virtual std::vector<std::pair<std::string, int>> list_of_fields() const { return {}; }
+	virtual std::vector<variable_type> write(const Agent &agent) const { return {}; }
+	virtual void read(Agent &agent, const std::vector<variable_type> &values) const {}
 };
