@@ -56,21 +56,21 @@ void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, con
 }
 
 
-std::vector<std::vector<size_t>> read_counties_from_file(H5::H5File &file, const char* directory="/states") {
+std::vector<std::vector<size_t>> read_counties_from_file(H5::H5File &file, const char* directory="/counties") {
 	std::vector<std::vector<size_t>> counties;
 	/* TODO */
 	return counties;
 }
-std::vector<std::vector<size_t>> read_counties_from_file(const char* file_name, const char* directory="/states") {
+std::vector<std::vector<size_t>> read_counties_from_file(const char* file_name, const char* directory="/counties") {
 	H5::H5File file(file_name, H5F_ACC_RDONLY);
 	return read_counties_from_file(file, directory);
 }
 
 
-void write_counties_to_file(const std::vector<std::vector<size_t>> &counties, H5::H5File &file, const char* directory="/states") {
+void write_counties_to_file(const std::vector<std::vector<size_t>> &counties, H5::H5File &file, const char* directory="/counties") {
 	/* TODO */
 }
-void write_counties_to_file(const std::vector<std::vector<size_t>> &counties, const char* file_name, const char* directory="/states") {
+void write_counties_to_file(const std::vector<std::vector<size_t>> &counties, const char* file_name, const char* directory="/counties") {
 	H5::H5File file(file_name, H5F_ACC_TRUNC);
 	write_counties_to_file(counties, file, directory);
 }
