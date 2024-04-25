@@ -21,7 +21,7 @@ const double frustration_multiplier = 0.015;
 const int N_try      = 10;
 const int N_it       = 2001;
 const int n_election = 400;
-const int n_save     = 5;
+const int n_save     = 10;
 
 const char* file_name =  "output/test.hdf5";
 
@@ -40,17 +40,21 @@ int main() {
 
 	auto *renormalize = new PopulationRenormalizeProportions<voter_stuborn>();
 
-	auto *agent_serializer    = new AgentPopulationVoterStubornSerializer();
-	auto *election_serializer = new VoterMajorityElectionSerializer();
+	auto *agent_full_serializer    = new AgentPopulationVoterStubornSerializer();
+	auto *agent_partial_serializer = new AgentPopulationSerializer<voter_stuborn>();
+	auto *election_serializer      = new VoterMajorityElectionSerializer();
 
 
 	auto *network = new SocialNetworkTemplate<AgentPopulationVoterStuborn>(800);
 	preferential_attachment(network, 3);
+
 	write_network_to_file(network, file);
 	// for testing:
 	read_network_from_file(network, file);
 
+
 	std::vector<std::vector<size_t>> counties = random_graphAgnostic_partition_graph(network, 3);
+
 	write_counties_to_file(counties, file);
 	// for testing:
 	read_counties_from_file(counties, file);
@@ -58,19 +62,21 @@ int main() {
 	network_randomize_agent_states_county(network, counties[0], std::vector<double>({0.6, 0.4, 0.1, 0.2}), 100, 200, 0.2, 0.2);
 	network_randomize_agent_states_county(network, counties[1], std::vector<double>({0.4, 0.6, 0.1, 0.2}), 50,  250, 0.2, 0.1);
 	network_randomize_agent_states_county(network, counties[2], std::vector<double>({0.5, 0.5, 0.1, 0.1}), 100, 300, 0.1, 0.2);
-	write_agent_states_to_file(network, agent_serializer, file, "/initial_state");
+
+	write_agent_states_to_file(network, agent_full_serializer, file, "/initial_state");
+
 
 	voter_majority_election_result* general_election_results;
 	std::vector<ElectionResultTemplate*> counties_election_results, stuborness_results;
 	for (int itry = 0; itry < N_try; ++itry) {
 		if (itry > 0) {
-			read_agent_states_from_file(network, agent_serializer, file, "/initial_state");
+			read_agent_states_from_file(network, agent_full_serializer, file, "/initial_state");
 		}
 
 		for (int it = 0; it < N_it; ++it) {
 			if (it%n_save == 0 && it > 0) {
 				std::string dir_name = "/states_" + std::to_string(itry) + "_" + std::to_string(it);
-				write_agent_states_to_file(network, agent_serializer, file, dir_name.c_str());
+				write_agent_states_to_file(network, agent_partial_serializer, file, dir_name.c_str());
 			}
 
 			if (it%n_election == 0) {

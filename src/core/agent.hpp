@@ -39,7 +39,7 @@ protected:
 	}
 
 public:
-	using variable_type = std::variant<bool, int, unsigned int, long, size_t, float, double>;
+	typedef std::variant<bool, int, unsigned int, long, size_t, float, double> variable_type;
 
 	virtual std::vector<std::pair<std::string, int>> list_of_fields() const { return {}; }
 	virtual std::vector<variable_type> write(const Agent &agent) const { return {}; }

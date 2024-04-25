@@ -94,3 +94,25 @@ public:
 		return result;
 	}
 };
+
+class VoterStubornSerializer : public AgentSerializerTemplate<voter_stuborn> {
+public:
+	std::vector<std::pair<std::string, int>> list_of_fields() const {
+		return {
+			{"candidate", 0},
+			{"stuborn",   0}
+		};
+	}
+	std::vector<variable_type> write(const voter_stuborn &agent) const {
+		std::vector<variable_type> values(2);
+
+		values[0] = agent.candidate;
+		values[1] = agent.stuborn;
+
+		return values;
+	}
+	void read(voter_stuborn &agent, const std::vector<variable_type> &values) const {
+		agent.candidate = std::get<bool>(values[0]);
+		agent.stuborn   = std::get<bool>(values[1]);
+	}
+};

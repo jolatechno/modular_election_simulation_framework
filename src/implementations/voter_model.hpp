@@ -104,3 +104,22 @@ class VoterMajorityElectionSerializer : public ElectionResultSerializerTemplate 
 		return values;
 	}
 };
+
+class VoterSerializer : public AgentSerializerTemplate<voter> {
+public:
+	std::vector<std::pair<std::string, int>> list_of_fields() const {
+		return {
+			{"candidate", 0}
+		};
+	}
+	std::vector<variable_type> write(const voter &agent) const {
+		std::vector<variable_type> values(1);
+		
+		values[0] = agent.candidate;
+
+		return values;
+	}
+	void read(voter &agent, const std::vector<variable_type> &values) const {
+		agent.candidate = std::get<bool>(values[0]);
+	}
+};
