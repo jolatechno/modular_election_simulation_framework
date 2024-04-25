@@ -48,6 +48,7 @@ int main() {
 	auto *network = new SocialNetworkTemplate<AgentPopulationVoterStuborn>(800);
 	preferential_attachment(network, 3);
 	write_network_to_file(network, file);
+	// for testing:
 	read_network_from_file(network, file);
 
 	std::vector<std::vector<size_t>> counties = random_graphAgnostic_partition_graph(network, 3);

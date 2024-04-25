@@ -53,6 +53,7 @@ public:
 	inline const std::vector<size_t>& neighbors(size_t node) const {
 		return agent_map[node].first;
 	}
+
 	inline bool are_neighbors(size_t i, size_t j) const {
 		if (i == j) {
 			return true;
@@ -68,6 +69,22 @@ public:
 	inline void add_connection(size_t i, size_t j) {
 		add_connection_single_way(i, j);
 		add_connection_single_way(j, i);
+	}
+
+	inline void remove_connection_single_way(size_t i, size_t j) {
+		std::remove(agent_map[i].first.begin(), agent_map[i].first.end(), j);
+	}
+	inline void remove_connection(size_t i, size_t j) {
+		remove_connection_single_way(i, j);
+		remove_connection_single_way(j, i);
+	}
+	inline void clear_connections(size_t i) {
+		agent_map[i].first.clear();
+	}
+	inline void clear_connections() {
+		for (size_t node = 0; node < num_nodes(); ++node) {
+			clear_connections(node);
+		}
 	}
 
 	inline size_t degree(size_t node) const {

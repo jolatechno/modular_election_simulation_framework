@@ -12,23 +12,26 @@ template<class Agent>
 void write_network_to_file(const SocialNetworkTemplate<Agent> *network, H5::H5File &file, const char* group_name="/network") {
 	H5::Group group = file.createGroup(group_name);
 
-	std::vector<size_t> degrees  = network->degrees();
-
-	std::vector<size_t> end_idxs = std::vector<size_t>(network->num_nodes()+1, 0);
-	std::partial_sum(degrees.begin(), degrees.end(), end_idxs.begin()+1);
-
-	H5WriteVector(group, end_idxs, "end_idxs");
-
-	/* TODO */
+	std::vector<std::vector<size_t>> neighbors;
+	for (size_t node = 0; node < network->num_nodes(); ++node) {
+		neighbors.push_back(network->neighbors(node));
+	}
+	H5WriteIrregular2DVector(group, neighbors, "neighbors");
 }
 template<class Agent>
 auto read_network_from_file(SocialNetworkTemplate<Agent> *network, H5::H5File &file, const char* group_name="/network") {
 	H5::Group group = file.openGroup(group_name);
 
-	std::vector<size_t> end_idxs(network->num_nodes()+1);
-	H5ReadVector(group, end_idxs, "end_idxs");
+	network->clear_connections();
 
-	/* TODO */
+	std::vector<std::vector<size_t>> neighbors(0, std::vector<size_t>(0));
+	H5ReadIrregular2DVector(group, neighbors, "neighbors");
+
+	for (size_t node = 0; node < network->num_nodes(); ++node) {
+		for (size_t neighbor : neighbors[node]) {
+			network->add_connection_single_way(node, neighbor);
+		}
+	}
 }
 
 
@@ -66,13 +69,16 @@ std::vector<std::vector<size_t>> read_counties_from_file(H5::H5File &file, const
 }
 
 
-void write_election_results_to_file(const std::vector<ElectionResultTemplate*> &result, const ElectionResultSerializerTemplate *serializer, H5::H5File &file, const char* group_name="/election_results") {
-	H5::Group group = file.createGroup(group_name);
-
-	/* TODO */
-}
 void write_election_result_to_file(const ElectionResultTemplate *result, const ElectionResultSerializerTemplate *serializer, H5::H5File &file, const char* group_name="/election_result") {
 	H5::Group group = file.createGroup(group_name);
 
 	/* TODO */
+}
+void write_election_results_to_file(const std::vector<ElectionResultTemplate*> &results, const ElectionResultSerializerTemplate *serializer, H5::H5File &file, const char* group_name="/election_results") {
+	H5::Group group = file.createGroup(group_name);
+
+	for (size_t i = 0; i < results.size(); ++i) {
+		std::string this_election_group_name = std::string(group_name) + "/election_result_" + std::to_string(i);
+		write_election_result_to_file(results[i], serializer, file, this_election_group_name.c_str());
+	}
 }

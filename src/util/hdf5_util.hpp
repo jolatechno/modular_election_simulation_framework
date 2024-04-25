@@ -38,7 +38,6 @@ void H5WriteVector(H5::Group &group, const std::vector<Type> &data, const char* 
 
     dataset.write(&data[0], H5DataType(data[0]));
 }
-
 template<class Type>
 void H5ReadVector(H5::Group &group, std::vector<Type> &data, const char* data_name) {
 	H5::DataSet   dataset   = group.openDataSet(data_name);
@@ -49,4 +48,42 @@ void H5ReadVector(H5::Group &group, std::vector<Type> &data, const char* data_na
 
     data.resize(dims[0]);
     dataset.read(&data[0], H5DataType(data[0]), dataspace);
+}
+
+template<class Type>
+void H5WriteIrregular2DVector(H5::Group &group, const std::vector<std::vector<Type>> &data, const char* data_name) {
+	std::string begin_end_idx_name = std::string(data_name) + "_begin_end_idx";
+
+	std::vector<size_t> begin_end_idx(data.size()+1, 0);
+	for (size_t i = 0; i < data.size(); ++i) {
+		begin_end_idx[i + 1] = begin_end_idx[i] + data[i].size();
+	}
+	H5WriteVector(group, begin_end_idx, begin_end_idx_name.c_str());
+
+	std::vector<Type> flattend_data(begin_end_idx.back());
+	for (size_t i = 0; i < data.size(); ++i) {
+		for (size_t j = 0; j < data[i].size(); j++) {
+			flattend_data[begin_end_idx[i] + j] = data[i][j];
+		}
+	}
+	H5WriteVector(group, flattend_data, data_name);
+}
+template<class Type>
+void H5ReadIrregular2DVector(H5::Group &group, std::vector<std::vector<Type>> &data, const char* data_name) {
+	std::string begin_end_idx_name = std::string(data_name) + "_begin_end_idx";
+
+	std::vector<size_t> begin_end_idx(0);
+	H5ReadVector(group, begin_end_idx, begin_end_idx_name.c_str());
+	data.resize(begin_end_idx.size()-1);
+
+	std::vector<Type> flattend_data(0);
+	H5ReadVector(group, flattend_data, data_name);
+	for (size_t i = 0; i < begin_end_idx.size()-1; ++i) {
+		size_t this_size = begin_end_idx[i + 1] - begin_end_idx[i];
+		data[i].resize(this_size);
+
+		for (size_t j = 0; j < this_size; j++) {
+			data[i][j] =  flattend_data[begin_end_idx[i] + j];
+		}
+	}
 }
