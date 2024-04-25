@@ -4,7 +4,10 @@
 
 
 const H5::DataType &H5DataType(bool X) {
-	return H5::PredType::NATIVE_HBOOL;
+	return H5::PredType::NATIVE_CHAR;
+}
+const H5::DataType &H5DataType(char X) {
+	return H5::PredType::NATIVE_CHAR;
 }
 const H5::DataType &H5DataType(int X) {
 	return H5::PredType::NATIVE_INT;
@@ -36,7 +39,7 @@ void H5WriteVector(H5::Group &group, const std::vector<Type> &data, const char* 
     H5::DataSpace dataspace = H5::DataSpace(1, dim);
     H5::DataSet   dataset   = group.createDataSet(data_name, H5DataType(data[0]), dataspace);
 
-    dataset.write(&data[0], H5DataType(data[0]));
+    dataset.write(data.data(), H5DataType(data[0]));
 }
 template<class Type>
 void H5ReadVector(H5::Group &group, std::vector<Type> &data, const char* data_name) {
@@ -47,7 +50,7 @@ void H5ReadVector(H5::Group &group, std::vector<Type> &data, const char* data_na
     dataspace.getSimpleExtentDims(dims, NULL);
 
     data.resize(dims[0]);
-    dataset.read(&data[0], H5DataType(data[0]), dataspace);
+    dataset.read(data.data(), H5DataType(data[0]), dataspace);
 }
 
 template<class Type>

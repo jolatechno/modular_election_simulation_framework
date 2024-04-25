@@ -40,8 +40,8 @@ int main() {
 
 	auto *renormalize = new PopulationRenormalizeProportions<voter_stuborn>();
 
+	auto *agent_serializer    = new AgentPopulationVoterStubornSerializer();
 	// TODO:
-	auto *agent_serializer    = new AgentSerializerTemplate<AgentPopulationVoterStuborn>();
 	auto *election_serializer = new ElectionResultSerializerTemplate();
 
 

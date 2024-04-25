@@ -41,7 +41,73 @@ void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, con
 
 	H5::Group group = file.createGroup(group_name);
 
-	/* TODO */
+	using vector_variable_type = std::variant<
+		std::vector<char>, std::vector<int>,    std::vector<unsigned int>,
+		std::vector<long>, std::vector<size_t>, std::vector<float>,
+		std::vector<double>>;
+
+	std::vector<std::pair<std::string, int>> list_of_fields = serializer->list_of_fields();
+	std::vector<vector_variable_type> write_vectors(list_of_fields.size());
+
+	for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
+		switch (list_of_fields[ifield].second) {
+		case 0:
+			write_vectors[ifield] = std::vector<char>(        network->num_nodes());
+			break;
+		case 1:
+			write_vectors[ifield] = std::vector<int>(         network->num_nodes());
+			break;
+		case 2:
+			write_vectors[ifield] = std::vector<unsigned int>(network->num_nodes());
+			break;
+		case 3:
+			write_vectors[ifield] = std::vector<long>(        network->num_nodes());
+			break;
+		case 4:
+			write_vectors[ifield] = std::vector<size_t>(      network->num_nodes());
+			break;
+		case 5:
+			write_vectors[ifield] = std::vector<float>(       network->num_nodes());
+			break;
+		case 6:
+			write_vectors[ifield] = std::vector<double>(      network->num_nodes());
+			break;
+		}
+	}
+
+	for (size_t node = 0; node < network->num_nodes(); ++node) {
+		auto values = serializer->write((Agent2&)(*network)[node]);
+
+		for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
+			/* TODO */
+		}
+	}
+
+	for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
+		switch (list_of_fields[ifield].second) {
+		case 0:
+			H5WriteVector<char>(        group, std::get<0>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 1:
+			H5WriteVector<int>(         group, std::get<1>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 2:
+			H5WriteVector<unsigned int>(group, std::get<2>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 3:
+			H5WriteVector<long>(        group, std::get<3>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 4:
+			H5WriteVector<size_t>(      group, std::get<4>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 5:
+			H5WriteVector<float>(       group, std::get<5>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 6:
+			H5WriteVector<double>(      group, std::get<6>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		}
+	}
 }
 template<class Agent, class Agent2>
 void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const AgentSerializerTemplate<Agent2> *serializer, H5::H5File &file, const char* group_name="/states") {
@@ -49,7 +115,54 @@ void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const Ag
 
 	H5::Group group = file.openGroup(group_name);
 
-	/* TODO */
+	using vector_variable_type = std::variant<
+		std::vector<char>, std::vector<int>,    std::vector<unsigned int>,
+		std::vector<long>, std::vector<size_t>, std::vector<float>,
+		std::vector<double>>;
+
+	std::vector<std::pair<std::string, int>> list_of_fields = serializer->list_of_fields();
+	std::vector<vector_variable_type> read_vectors(list_of_fields.size());
+
+	for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
+		switch (list_of_fields[ifield].second) {
+		case 0:
+			read_vectors[ifield] = std::vector<char>();
+			H5ReadVector<char>(        group, std::get<0>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 1:
+			read_vectors[ifield] = std::vector<int>();
+			H5ReadVector<int>(         group, std::get<1>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 2:
+			read_vectors[ifield] = std::vector<unsigned int>();
+			H5ReadVector<unsigned int>(group, std::get<2>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 3:
+			read_vectors[ifield] = std::vector<long>();
+			H5ReadVector<long>(        group, std::get<3>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 4:
+			read_vectors[ifield] = std::vector<size_t>();
+			H5ReadVector<size_t>(      group, std::get<4>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 5:
+			read_vectors[ifield] = std::vector<float>();
+			H5ReadVector<float>(       group, std::get<5>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 6:
+			read_vectors[ifield] = std::vector<double>();
+			H5ReadVector<double>(      group, std::get<6>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		}
+	}
+
+	for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
+		for (size_t node = 0; node < network->num_nodes(); ++node) {
+			/* TODO */
+		}
+
+		/* TODO */
+	}
 }
 
 
@@ -59,7 +172,7 @@ void write_counties_to_file(const std::vector<std::vector<size_t>> &counties, H5
 }
 void read_counties_from_file(std::vector<std::vector<size_t>> &counties, H5::H5File &file, const char* group_name="/counties") {
 	counties.clear();
-	
+
 	H5::Group group = file.openGroup(group_name);
 	H5ReadIrregular2DVector(group, counties, "counties");
 }

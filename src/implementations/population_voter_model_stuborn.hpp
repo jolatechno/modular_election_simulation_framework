@@ -152,3 +152,25 @@ public:
 		}
 	}
 };
+
+class AgentPopulationVoterStubornSerializer : public AgentSerializerTemplate<AgentPopulationVoterStuborn> {
+public:
+	std::vector<std::pair<std::string, int>> list_of_fields() const {
+		return {
+			{"proportions_false_notStuborn", 6},
+			{"proportions_true_notStuborn",  6},
+			{"proportions_false_stuborn",    6},
+			{"proportions_true_stuborn",     6},
+			{"stuborn_equilibrium_false",    6},
+			{"stuborn_equilibrium_true",     6}
+		};
+	}
+	std::vector<variable_type> write(const AgentPopulationVoterStuborn &agent) const {
+		/* TODO */
+		
+		return {};
+	}
+	void read(AgentPopulationVoterStuborn &agent, const std::vector<variable_type> &values) const {
+		/* TODO */
+	}
+};
