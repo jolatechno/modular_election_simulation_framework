@@ -15,13 +15,15 @@
 
 const size_t N_select               = 10;
 const double dt                     = 0.2;
-const double overtoon_multiplier    = 0.015;
-const double frustration_multiplier = 0.015;
+const double overtoon_multiplier    = 0.05;
+const double frustration_multiplier = 0.005;
 
-const int N_try      = 10;
-const int N_it       = 2001;
-const int n_election = 400;
-const int n_save     = 10;
+const size_t N_nodes    = 800;
+const int    N_counties = 3;
+const int    N_try      = 10;
+const int    N_it       = 3001;
+const int    n_election = 300;
+const int    n_save     = 10;
 
 const char* file_name =  "output/test.hdf5";
 
@@ -45,8 +47,8 @@ int main() {
 	auto *election_serializer      = new VoterMajorityElectionSerializer();
 
 
-	auto *network = new SocialNetworkTemplate<AgentPopulationVoterStuborn>(800);
-	preferential_attachment(network, 3);
+	auto *network = new SocialNetworkTemplate<AgentPopulationVoterStuborn>(N_nodes);
+	preferential_attachment(network, N_counties);
 
 	write_network_to_file(network, file);
 	// for testing:
@@ -89,7 +91,7 @@ int main() {
 				write_election_result_to_file( general_election_results,  election_serializer, file, dir_name_general.c_str());
 				write_election_results_to_file(counties_election_results, election_serializer, file, dir_name_counties.c_str());
 
-				std::cout << "\n\ntry " << itry+1 << "/" << N_try << ", it " << it+1 << "/" << N_it << ":\n\n";
+				std::cout << "\n\ntry " << itry+1 << "/" << N_try << ", it " << it << "/" << N_it-1 << ":\n\n";
 				std::cout << "network->get_election_results(...) = " << general_election_results->result << " (" << int(general_election_results->proportion*100) << "%)\n";
 				std::cout << "network->get_election_results(counties, ...): \n";
 				for (int couty = 0; couty < counties.size(); couty++) {
