@@ -82,7 +82,7 @@ void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, con
 		for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
 			switch (list_of_fields[ifield].second) {
 			case 0:
-				group, std::get<0>(write_vectors[ifield])[node] = std::get<0>(values[ifield]);
+				group, std::get<0>(write_vectors[ifield])[node] = (char)std::get<0>(values[ifield]);
 			case 1:
 				group, std::get<1>(write_vectors[ifield])[node] = std::get<1>(values[ifield]);
 			case 2:
@@ -178,7 +178,7 @@ void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const Ag
 		for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
 			switch (list_of_fields[ifield].second) {
 			case 0:
-				values[ifield] = std::get<0>(read_vectors[ifield])[node];
+				values[ifield] = (bool)std::get<0>(read_vectors[ifield])[node];
 				break;
 			case 1:
 				values[ifield] = std::get<1>(read_vectors[ifield])[node];
@@ -221,7 +221,36 @@ void read_counties_from_file(std::vector<std::vector<size_t>> &counties, H5::H5F
 void write_election_result_to_file(const ElectionResultTemplate *result, const ElectionResultSerializerTemplate *serializer, H5::H5File &file, const char* group_name="/election_result") {
 	H5::Group group = file.createGroup(group_name);
 
-	/* TODO */
+	using variable_type = std::variant<bool, int, unsigned int, long, size_t, float, double>;
+
+	std::vector<std::pair<std::string, int>> list_of_fields = serializer->list_of_fields();
+	std::vector<variable_type>               values         = serializer->write(*result);
+
+	for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
+		switch (list_of_fields[ifield].second) {
+		case 0:
+			H5WriteSingle<char>(        group, (char)std::get<0>(values[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 1:
+			H5WriteSingle<int>(         group, std::get<1>(values[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 2:
+			H5WriteSingle<unsigned int>(group, std::get<2>(values[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 3:
+			H5WriteSingle<long>(        group, std::get<3>(values[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 4:
+			H5WriteSingle<size_t>(      group, std::get<4>(values[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 5:
+			H5WriteSingle<float>(       group, std::get<5>(values[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		case 6:
+			H5WriteSingle<double>(      group, std::get<6>(values[ifield]), list_of_fields[ifield].first.c_str());
+			break;
+		}
+	}
 }
 void write_election_results_to_file(const std::vector<ElectionResultTemplate*> &results, const ElectionResultSerializerTemplate *serializer, H5::H5File &file, const char* group_name="/election_results") {
 	H5::Group group = file.createGroup(group_name);

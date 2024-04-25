@@ -34,6 +34,25 @@ static_assert(false, "Type not defined as serializable !");
 }
 
 template<class Type>
+void H5WriteSingle(H5::Group &group, const Type &data, const char* data_name) {
+	hsize_t dim[1] = { 1 };
+    H5::DataSpace dataspace = H5::DataSpace(1, dim);
+    H5::DataSet   dataset   = group.createDataSet(data_name, H5DataType(data), dataspace);
+
+    dataset.write(&data, H5DataType(data));
+}
+template<class Type>
+Type H5ReadSingle(H5::Group &group, const char* data_name) {
+	H5::DataSet   dataset   = group.openDataSet(data_name);
+	H5::DataSpace dataspace = dataset.getSpace();
+
+    Type data;
+    dataset.read(&data, H5DataType(data), dataspace);
+
+    return data;
+}
+
+template<class Type>
 void H5WriteVector(H5::Group &group, const std::vector<Type> &data, const char* data_name) {
 	hsize_t dim[1] = { data.size() };
     H5::DataSpace dataspace = H5::DataSpace(1, dim);

@@ -81,3 +81,26 @@ public:
 		agent.candidate = neighbors[neighbor_idx]->candidate;
 	}
 };
+
+class VoterMajorityElectionSerializer : public ElectionResultSerializerTemplate {
+	std::vector<std::pair<std::string, int>> list_of_fields() const {
+		return {
+			{"result",      0},
+			{"proportion",  5},
+			{"vote_false",  4},
+			{"vote_true",   4}
+		};
+	}
+	std::vector<variable_type> write(const ElectionResultTemplate &result_) const {
+		voter_majority_election_result &result = (voter_majority_election_result&)result_;
+
+		std::vector<variable_type> values(4);
+
+		values[0] = (bool)result.result;
+		values[1] = result.proportion;
+		values[2] = result.vote_False;
+		values[3] = result.vote_True;
+
+		return values;
+	}
+};
