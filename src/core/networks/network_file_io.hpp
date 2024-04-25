@@ -55,17 +55,11 @@ void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const Ag
 
 void write_counties_to_file(const std::vector<std::vector<size_t>> &counties, H5::H5File &file, const char* group_name="/counties") {
 	H5::Group group = file.createGroup(group_name);
-
-	/* TODO */
+	H5WriteIrregular2DVector(group, counties, "counties");
 }
-std::vector<std::vector<size_t>> read_counties_from_file(H5::H5File &file, const char* group_name="/counties") {
-	std::vector<std::vector<size_t>> counties;
-
+void read_counties_from_file(std::vector<std::vector<size_t>> &counties, H5::H5File &file, const char* group_name="/counties") {
 	H5::Group group = file.openGroup(group_name);
-
-	/* TODO */
-
-	return counties;
+	H5ReadIrregular2DVector(group, counties, "counties");
 }
 
 
