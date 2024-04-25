@@ -41,6 +41,7 @@ void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, con
 
 	H5::Group group = file.createGroup(group_name);
 
+	using variable_type = std::variant<bool, int, unsigned int, long, size_t, float, double>;
 	using vector_variable_type = std::variant<
 		std::vector<char>, std::vector<int>,    std::vector<unsigned int>,
 		std::vector<long>, std::vector<size_t>, std::vector<float>,
@@ -76,10 +77,25 @@ void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, con
 	}
 
 	for (size_t node = 0; node < network->num_nodes(); ++node) {
-		auto values = serializer->write((Agent2&)(*network)[node]);
+		std::vector<variable_type> values = serializer->write((Agent2&)(*network)[node]);
 
 		for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
-			/* TODO */
+			switch (list_of_fields[ifield].second) {
+			case 0:
+				group, std::get<0>(write_vectors[ifield])[node] = std::get<0>(values[ifield]);
+			case 1:
+				group, std::get<1>(write_vectors[ifield])[node] = std::get<1>(values[ifield]);
+			case 2:
+				group, std::get<2>(write_vectors[ifield])[node] = std::get<2>(values[ifield]);
+			case 3:
+				group, std::get<3>(write_vectors[ifield])[node] = std::get<3>(values[ifield]);
+			case 4:
+				group, std::get<4>(write_vectors[ifield])[node] = std::get<4>(values[ifield]);
+			case 5:
+				group, std::get<5>(write_vectors[ifield])[node] = std::get<5>(values[ifield]);
+			case 6:
+				group, std::get<6>(write_vectors[ifield])[node] = std::get<6>(values[ifield]);
+			}
 		}
 	}
 
@@ -115,6 +131,7 @@ void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const Ag
 
 	H5::Group group = file.openGroup(group_name);
 
+	using variable_type = std::variant<bool, int, unsigned int, long, size_t, float, double>;
 	using vector_variable_type = std::variant<
 		std::vector<char>, std::vector<int>,    std::vector<unsigned int>,
 		std::vector<long>, std::vector<size_t>, std::vector<float>,
@@ -156,12 +173,35 @@ void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const Ag
 		}
 	}
 
-	for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
-		for (size_t node = 0; node < network->num_nodes(); ++node) {
-			/* TODO */
+	std::vector<variable_type> values(list_of_fields.size());
+	for (size_t node = 0; node < network->num_nodes(); ++node) {
+		for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
+			switch (list_of_fields[ifield].second) {
+			case 0:
+				values[ifield] = std::get<0>(read_vectors[ifield])[node];
+				break;
+			case 1:
+				values[ifield] = std::get<1>(read_vectors[ifield])[node];
+				break;
+			case 2:
+				values[ifield] = std::get<2>(read_vectors[ifield])[node];
+				break;
+			case 3:
+				values[ifield] = std::get<3>(read_vectors[ifield])[node];
+				break;
+			case 4:
+				values[ifield] = std::get<4>(read_vectors[ifield])[node];
+				break;
+			case 5:
+				values[ifield] = std::get<5>(read_vectors[ifield])[node];
+				break;
+			case 6:
+				values[ifield] = std::get<6>(read_vectors[ifield])[node];
+				break;
+			}
 		}
 
-		/* TODO */
+		serializer->read((Agent2&)(*network)[node], values);
 	}
 }
 

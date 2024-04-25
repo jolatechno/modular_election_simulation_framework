@@ -166,11 +166,25 @@ public:
 		};
 	}
 	std::vector<variable_type> write(const AgentPopulationVoterStuborn &agent) const {
-		/* TODO */
-		
-		return {};
+		std::vector<variable_type> values(6);
+
+		values[0] = agent.proportions[0];
+		values[1] = agent.proportions[1];
+		values[2] = agent.proportions[2];
+		values[3] = agent.proportions[3];
+
+		values[4] = agent.stuborn_equilibrium[0];
+		values[5] = agent.stuborn_equilibrium[1];
+
+		return values;
 	}
 	void read(AgentPopulationVoterStuborn &agent, const std::vector<variable_type> &values) const {
-		/* TODO */
+		agent.proportions[0] = std::get<double>(values[0]);
+		agent.proportions[1] = std::get<double>(values[1]);
+		agent.proportions[2] = std::get<double>(values[2]);
+		agent.proportions[3] = std::get<double>(values[3]);
+
+		agent.stuborn_equilibrium[0] = std::get<double>(values[4]);
+		agent.stuborn_equilibrium[1] = std::get<double>(values[5]);
 	}
 };
