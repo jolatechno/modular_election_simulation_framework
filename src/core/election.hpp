@@ -23,4 +23,7 @@ public:
 	virtual void operator()(Agent&, const ElectionResultTemplate*) const {};
 };
 
-class ElectionResultSerializerTemplate : public AgentSerializerTemplate<ElectionResultTemplate> {};
+class ElectionResultSerializerTemplate : public AgentSerializerTemplate<ElectionResultTemplate> {
+private:
+	using AgentSerializerTemplate<ElectionResultTemplate>::read; // to make read private as it shouldn't be used for elections !
+};
