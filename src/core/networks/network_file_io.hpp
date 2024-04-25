@@ -58,6 +58,8 @@ void write_counties_to_file(const std::vector<std::vector<size_t>> &counties, H5
 	H5WriteIrregular2DVector(group, counties, "counties");
 }
 void read_counties_from_file(std::vector<std::vector<size_t>> &counties, H5::H5File &file, const char* group_name="/counties") {
+	counties.clear();
+	
 	H5::Group group = file.openGroup(group_name);
 	H5ReadIrregular2DVector(group, counties, "counties");
 }
