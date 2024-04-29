@@ -13,10 +13,10 @@
 #include "src/util/util.hpp"
 
 
-const size_t N_select               = 10;
+const size_t N_select               = 15;
 const double dt                     = 0.2;
-const double overtoon_multiplier    = 0.02;
-const double frustration_multiplier = 0.02;
+const double overtoon_multiplier    = 0.08;
+const double frustration_multiplier = 0.03;
 
 const double initial_radicalization_multiplier = 0.1;
 
@@ -24,7 +24,7 @@ const double initial_radicalization_multiplier = 0.1;
 const int    N_counties = 2;
 const int    N_try      = 10;
 const int    N_it       = 3001;
-const int    n_election = 300;
+const int    n_election = 500;
 const int    n_save     = 10;
 
 const char* input_file_name  = "output/preprocessed.h5";
