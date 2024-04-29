@@ -18,18 +18,29 @@ const double dt                     = 0.2;
 const double overtoon_multiplier    = 0.05;
 const double frustration_multiplier = 0.005;
 
-const size_t N_nodes    = 800;
-const int    N_counties = 3;
+const double initial_radicalization_multiplier = 0.1;
+
+      size_t N_nodes;
+const int    N_counties = 2;
 const int    N_try      = 10;
 const int    N_it       = 3001;
 const int    n_election = 300;
 const int    n_save     = 10;
 
-const char* file_name = "output/output_1.h5";
+const char* input_file_name  = "output/preprocessed.h5";
+const char* output_file_name = "output/output_2.h5";
 
+template<class Type>
+double get_median(std::vector<Type> vec) {
+	std::sort(vec.begin(), vec.end()); 
+
+	size_t median_element = vec.size()/2;
+	return vec[median_element];
+} 
 
 int main() {
-	H5::H5File file(file_name, H5F_ACC_TRUNC);
+	H5::H5File output_file(output_file_name, H5F_ACC_TRUNC);
+	H5::H5File input_file( input_file_name,  H5F_ACC_RDWR);
 
 
 	auto *election            = new PopulationElection<voter_stuborn>(new voter_majority_election<voter_stuborn>());
@@ -47,31 +58,75 @@ int main() {
 	auto *election_serializer      = new VoterMajorityElectionSerializer();
 
 
-	auto *network = new SocialNetworkTemplate<AgentPopulationVoterStuborn>(N_nodes);
-	preferential_attachment(network, N_counties);
-	write_network_to_file(network, file);
+	auto *network = new SocialNetworkTemplate<AgentPopulationVoterStuborn>();
+	read_network_from_file(network, input_file);
+	write_network_to_file( network, output_file);
+	N_nodes = network->num_nodes();
 
 
-	std::vector<std::vector<size_t>> counties = random_graphAgnostic_partition_graph(network, 3);
-	write_counties_to_file(counties, file);
+	std::vector<float> lat;
+	H5::Group geo_data = input_file.openGroup("geo_data");
+	H5ReadVector(geo_data, lat, "lat");
 
-	network_randomize_agent_states_county(network, counties[0], std::vector<double>({0.6, 0.4, 0.1, 0.2}), 100, 200, 0.2, 0.2);
-	network_randomize_agent_states_county(network, counties[1], std::vector<double>({0.4, 0.6, 0.1, 0.2}), 50,  250, 0.2, 0.1);
-	network_randomize_agent_states_county(network, counties[2], std::vector<double>({0.5, 0.5, 0.1, 0.1}), 100, 300, 0.1, 0.2);
-	write_agent_states_to_file(network, agent_full_serializer, file, "/initial_state");
+	std::vector<std::vector<size_t>> counties = {{}, {}};
+	float median = get_median(lat);
+	for (size_t node = 0; node < N_nodes; ++node) {
+		int group = lat[node] < median;
+		counties[group].push_back(node);
+	}
+
+	write_counties_to_file(counties, output_file);
+
+
+	std::vector<double> populations;
+	H5::Group demo_data = input_file.openGroup("demo_data");
+	H5ReadVector(demo_data, populations,  "voter_population");
+
+	std::vector<double> vote_macron, vote_lepen;
+	H5::Group vote_data = input_file.openGroup("vote_data");
+	H5ReadVector(vote_data, vote_macron, "PROP_Voix_MACRON");
+	H5ReadVector(vote_data, vote_lepen,  "PROP_Voix_LE_PEN");
+
+	for (size_t node = 0; node < N_nodes; ++node) {
+		double total_vote = vote_macron[node] + vote_lepen[node];
+
+		double prop_macron            = vote_macron[node]/total_vote;
+		double prop_macron_stuborn    = prop_macron*initial_radicalization_multiplier;
+		double prop_macron_notStuborn = prop_macron - prop_macron_stuborn;
+
+		double macron_radicalization_eq = 2*prop_macron_stuborn;
+
+		double prop_lepen            = vote_lepen[node]/total_vote;
+		double prop_lepen_stuborn    = prop_lepen*initial_radicalization_multiplier;
+		double prop_lepen_notStuborn = prop_lepen - prop_lepen_stuborn;
+
+		double lepen_radicalization_eq = 2*prop_lepen_stuborn;
+
+		(*network)[node].population = (size_t)populations[node];
+
+		(*network)[node].stuborn_equilibrium[0] = macron_radicalization_eq;
+		(*network)[node].stuborn_equilibrium[1] = lepen_radicalization_eq;
+
+		(*network)[node].proportions[0] = prop_macron_notStuborn;
+		(*network)[node].proportions[1] = prop_lepen_notStuborn;
+		(*network)[node].proportions[2] = prop_macron_stuborn;
+		(*network)[node].proportions[3] = prop_lepen_stuborn;
+	}
+
+	write_agent_states_to_file(network, agent_full_serializer, output_file, "/initial_state");
 
 
 	voter_majority_election_result* general_election_results;
 	std::vector<ElectionResultTemplate*> counties_election_results, stuborness_results;
 	for (int itry = 0; itry < N_try; ++itry) {
 		if (itry > 0) {
-			read_agent_states_from_file(network, agent_full_serializer, file, "/initial_state");
+			read_agent_states_from_file(network, agent_full_serializer, output_file, "/initial_state");
 		}
 
 		for (int it = 0; it < N_it; ++it) {
 			if (it%n_save == 0 && it > 0) {
 				std::string dir_name = "/states_" + std::to_string(itry) + "_" + std::to_string(it);
-				write_agent_states_to_file(network, agent_partial_serializer, file, dir_name.c_str());
+				write_agent_states_to_file(network, agent_partial_serializer, output_file, dir_name.c_str());
 			}
 
 			if (it%n_election == 0) {
@@ -81,8 +136,8 @@ int main() {
 
 				std::string dir_name_general  = "/general_election_result_"  + std::to_string(itry) + "_" + std::to_string(it);
 				std::string dir_name_counties = "/counties_election_result_" + std::to_string(itry) + "_" + std::to_string(it);
-				write_election_result_to_file( general_election_results,  election_serializer, file, dir_name_general.c_str());
-				write_election_results_to_file(counties_election_results, election_serializer, file, dir_name_counties.c_str());
+				write_election_result_to_file( general_election_results,  election_serializer, output_file, dir_name_general.c_str());
+				write_election_results_to_file(counties_election_results, election_serializer, output_file, dir_name_counties.c_str());
 
 				std::cout << "\n\ntry " << itry+1 << "/" << N_try << ", it " << it << "/" << N_it-1 << ":\n\n";
 				std::cout << "network->get_election_results(...) = " << general_election_results->result << " (" << int(general_election_results->proportion*100) << "%)\n";

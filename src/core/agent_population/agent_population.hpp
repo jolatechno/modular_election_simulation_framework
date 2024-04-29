@@ -97,32 +97,35 @@ public:
 	using variable_type = std::variant<bool, int, unsigned int, long, size_t, float, double>;
 	
 	std::vector<std::pair<std::string, int>> list_of_fields() const {
-		size_t num_fields = (new Agent)->list_of_possible_agents().size();
+		size_t num_fields = 1 + (new Agent)->list_of_possible_agents().size();
 
 		std::vector<std::pair<std::string, int>> list_of_fields_(num_fields);
-		for (size_t ifield = 0; ifield < num_fields; ++ifield) {
+		for (size_t ifield = 0; ifield < num_fields-1; ++ifield) {
 			std::string field_name = "proportions_" + std::to_string(ifield);
 
 			list_of_fields_[ifield] = {field_name, 6};
 		}
+		list_of_fields_[num_fields-1] = {"population", 4};
 
 		return list_of_fields_;
 	}
 	std::vector<variable_type> write(const AgentPopulation<Agent> &agent) const {
-		size_t num_fields = agent.proportions.size();
+		size_t num_fields = 1 + agent.proportions.size();
 		std::vector<variable_type> values(num_fields);
 
-		for (size_t ifield = 0; ifield < num_fields; ++ifield) {
+		for (size_t ifield = 0; ifield < num_fields-1; ++ifield) {
 			values[ifield] = agent.proportions[ifield];
 		}
+		values[num_fields-1] = agent.population;
 
 		return values;
 	}
 	void read(AgentPopulation<Agent> &agent, const std::vector<variable_type> &values) const {
-		size_t num_fields = agent.proportions.size();
+		size_t num_fields = 1 + agent.proportions.size();
 
-		for (size_t ifield = 0; ifield < num_fields; ++ifield) {
+		for (size_t ifield = 0; ifield < num_fields-1; ++ifield) {
 			agent.proportions[ifield] = std::get<double>(values[ifield]);
 		}
+		agent.population = std::get<size_t>(values[num_fields-1]);
 	}
 };

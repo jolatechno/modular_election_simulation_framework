@@ -162,11 +162,12 @@ public:
 			{"proportions_false_stuborn",    6},
 			{"proportions_true_stuborn",     6},
 			{"stuborn_equilibrium_false",    6},
-			{"stuborn_equilibrium_true",     6}
+			{"stuborn_equilibrium_true",     6},
+			{"population",                   4}
 		};
 	}
 	std::vector<variable_type> write(const AgentPopulationVoterStuborn &agent) const {
-		std::vector<variable_type> values(6);
+		std::vector<variable_type> values(7);
 
 		values[0] = agent.proportions[0];
 		values[1] = agent.proportions[1];
@@ -175,6 +176,8 @@ public:
 
 		values[4] = agent.stuborn_equilibrium[0];
 		values[5] = agent.stuborn_equilibrium[1];
+
+		values[6] = agent.population;
 
 		return values;
 	}
@@ -186,5 +189,7 @@ public:
 
 		agent.stuborn_equilibrium[0] = std::get<double>(values[4]);
 		agent.stuborn_equilibrium[1] = std::get<double>(values[5]);
+
+		agent.population = std::get<size_t>(values[6]);
 	}
 };

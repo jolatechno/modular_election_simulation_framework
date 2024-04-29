@@ -22,10 +22,11 @@ template<class Agent>
 auto read_network_from_file(SocialNetworkTemplate<Agent> *network, H5::H5File &file, const char* group_name="/network") {
 	H5::Group group = file.openGroup(group_name);
 
-	network->clear_connections();
-
 	std::vector<std::vector<size_t>> neighbors(0, std::vector<size_t>(0));
 	H5ReadIrregular2DVector(group, neighbors, "neighbors");
+
+	network->resize(neighbors.size());
+	network->clear_connections();
 
 	for (size_t node = 0; node < network->num_nodes(); ++node) {
 		for (size_t neighbor : neighbors[node]) {
@@ -83,18 +84,25 @@ void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, con
 			switch (list_of_fields[ifield].second) {
 			case 0:
 				group, std::get<0>(write_vectors[ifield])[node] = (char)std::get<0>(values[ifield]);
+				break;
 			case 1:
 				group, std::get<1>(write_vectors[ifield])[node] = std::get<1>(values[ifield]);
+				break;
 			case 2:
 				group, std::get<2>(write_vectors[ifield])[node] = std::get<2>(values[ifield]);
+				break;
 			case 3:
 				group, std::get<3>(write_vectors[ifield])[node] = std::get<3>(values[ifield]);
+				break;
 			case 4:
 				group, std::get<4>(write_vectors[ifield])[node] = std::get<4>(values[ifield]);
+				break;
 			case 5:
 				group, std::get<5>(write_vectors[ifield])[node] = std::get<5>(values[ifield]);
+				break;
 			case 6:
 				group, std::get<6>(write_vectors[ifield])[node] = std::get<6>(values[ifield]);
+				break;
 			}
 		}
 	}

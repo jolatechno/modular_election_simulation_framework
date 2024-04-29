@@ -31,12 +31,15 @@ private:
 		return vec;
 	}
 public:
-	SocialNetworkTemplate(size_t num_nodes) {
-		agent_map.resize(num_nodes);
+	SocialNetworkTemplate(size_t num_nodes=0) {
+		resize(num_nodes);
 	}
 
 	inline size_t num_nodes() const {
 		return agent_map.size();
+	}
+	inline void resize(size_t num_nodes) {
+		agent_map.resize(num_nodes);
 	}
 	inline std::vector<size_t> nodes() const {
 		std::vector<size_t> nodes(num_nodes());
