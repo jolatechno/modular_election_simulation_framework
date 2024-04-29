@@ -16,7 +16,7 @@
 const size_t N_select               = 10;
 const double dt                     = 0.2;
 const double overtoon_multiplier    = 0.05;
-const double frustration_multiplier = 0.005;
+const double frustration_multiplier = 0.03;
 
 const size_t N_nodes    = 800;
 const int    N_counties = 3;

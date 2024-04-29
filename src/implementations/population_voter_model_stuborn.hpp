@@ -46,7 +46,7 @@ public:
 		if (N_population_self <= N_select) {
 			return;
 		}
-		double candidate1_proportion_self = N_candidate1_self/N_population_self;
+		double candidate1_proportion_self = std::min(1.d, N_candidate1_self/N_population_self);
 
 		double N_population_neighborhood = agent.population;
 		double N_candidate1_neighborhood = agent.population*(agent.proportions[1] + agent.proportions[3]);
@@ -57,7 +57,7 @@ public:
 		if (N_population_neighborhood <= N_select) {
 			return;
 		}
-		double candidate1_proportion_neighborhood = N_candidate1_neighborhood/N_population_neighborhood;
+		double candidate1_proportion_neighborhood = std::min(1.d, N_candidate1_neighborhood/N_population_neighborhood);
 
 		std::binomial_distribution<int> distribution_self(        N_select, candidate1_proportion_self);
 		std::binomial_distribution<int> distribution_neighborhood(N_select, candidate1_proportion_neighborhood);

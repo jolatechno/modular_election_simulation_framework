@@ -24,7 +24,7 @@ public:
 			N_population_neighborhood += neighbor->population;
 			N_candidate1_neighborhood += neighbor->population*neighbor->proportions[1];
 		}
-		double candidate1_proportion_neighborhood = N_candidate1_neighborhood/N_population_neighborhood;
+		double candidate1_proportion_neighborhood = std::min(1.d, N_candidate1_neighborhood/N_population_neighborhood);
 
 		std::binomial_distribution<int> distribution_self(        N_select, candidate1_proportion_self);
 		std::binomial_distribution<int> distribution_neighborhood(N_select, candidate1_proportion_neighborhood);
