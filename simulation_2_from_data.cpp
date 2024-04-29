@@ -15,8 +15,8 @@
 
 const size_t N_select               = 10;
 const double dt                     = 0.2;
-const double overtoon_multiplier    = 0.05;
-const double frustration_multiplier = 0.005;
+const double overtoon_multiplier    = 0.02;
+const double frustration_multiplier = 0.02;
 
 const double initial_radicalization_multiplier = 0.1;
 
@@ -82,13 +82,13 @@ int main() {
 	H5::Group demo_data = input_file.openGroup("demo_data");
 	H5ReadVector(demo_data, populations,  "voter_population");
 
-	std::vector<double> vote_macron, vote_lepen;
+	std::vector<double> vote_macron, vote_melenchon;
 	H5::Group vote_data = input_file.openGroup("vote_data");
-	H5ReadVector(vote_data, vote_macron, "PROP_Voix_MACRON");
-	H5ReadVector(vote_data, vote_lepen,  "PROP_Voix_LE_PEN");
+	H5ReadVector(vote_data, vote_macron,    "PROP_Voix_MACRON");
+	H5ReadVector(vote_data, vote_melenchon, "PROP_Voix_MÉLENCHON");
 
 	for (size_t node = 0; node < N_nodes; ++node) {
-		double total_vote = vote_macron[node] + vote_lepen[node];
+		double total_vote = vote_macron[node] + vote_melenchon[node];
 
 		double prop_macron            = vote_macron[node]/total_vote;
 		double prop_macron_stuborn    = prop_macron*initial_radicalization_multiplier;
@@ -96,21 +96,21 @@ int main() {
 
 		double macron_radicalization_eq = 2*prop_macron_stuborn;
 
-		double prop_lepen            = vote_lepen[node]/total_vote;
-		double prop_lepen_stuborn    = prop_lepen*initial_radicalization_multiplier;
-		double prop_lepen_notStuborn = prop_lepen - prop_lepen_stuborn;
+		double prop_melenchon            = vote_melenchon[node]/total_vote;
+		double prop_melenchon_stuborn    = prop_melenchon*initial_radicalization_multiplier;
+		double prop_melenchon_notStuborn = prop_melenchon - prop_melenchon_stuborn;
 
-		double lepen_radicalization_eq = 2*prop_lepen_stuborn;
+		double melenchon_radicalization_eq = 2*prop_melenchon_stuborn;
 
 		(*network)[node].population = (size_t)populations[node];
 
 		(*network)[node].stuborn_equilibrium[0] = macron_radicalization_eq;
-		(*network)[node].stuborn_equilibrium[1] = lepen_radicalization_eq;
+		(*network)[node].stuborn_equilibrium[1] = melenchon_radicalization_eq;
 
 		(*network)[node].proportions[0] = prop_macron_notStuborn;
-		(*network)[node].proportions[1] = prop_lepen_notStuborn;
+		(*network)[node].proportions[1] = prop_melenchon_notStuborn;
 		(*network)[node].proportions[2] = prop_macron_stuborn;
-		(*network)[node].proportions[3] = prop_lepen_stuborn;
+		(*network)[node].proportions[3] = prop_melenchon_stuborn;
 	}
 
 	write_agent_states_to_file(network, agent_full_serializer, output_file, "/initial_state");
