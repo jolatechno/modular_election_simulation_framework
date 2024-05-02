@@ -54,7 +54,7 @@ template<class Agent>
 class AgentPopulationInteractionFunctionTemplate : public AgentInteractionFunctionTemplate<AgentPopulation<Agent>> {
 public:
 	template<class Agent2>
-	std::vector<long int> random_select(size_t N_select, std::vector<const Agent2*> neighbors, std::vector<size_t> unselectable={}) const {
+	std::vector<double> random_select(size_t N_select, std::vector<const Agent2*> neighbors, std::vector<size_t> unselectable={}) const {
 		static_assert(std::is_convertible<Agent2, AgentPopulation<Agent>>::value, "Error: Agent class is not compatible with the one used by AgentPopulationInteractionFunctionTemplate in random_select !");
 		size_t num_fields = (new Agent)->list_of_possible_agents().size();
 
@@ -77,7 +77,7 @@ public:
 			}
 		}
 
-		std::vector<long int> selected(num_fields, 0);
+		std::vector<double> selected(num_fields, 0);
 		if (normalization_factor == 0) {
 			return selected;
 		}
@@ -92,7 +92,7 @@ public:
 			--last_idx;
 		}
 
-		for (size_t ifield = 0; ifield < last_idx+1; ++ifield) {
+		for (size_t ifield = 0; ifield <= last_idx; ++ifield) {
 			if (ifield == last_idx) {
 				selected[ifield] = to_select;
 			} else if (is_selectable[ifield]) {
@@ -100,9 +100,11 @@ public:
 					proportions[ifield]/normalization_factor));
 
 				std::binomial_distribution<long int> distribution(to_select, select_proportion);
-				selected[ifield] = distribution(get_random_generator());
+				long int this_selected = distribution(get_random_generator());
+				selected[ifield]       = (double)this_selected;
 
-				to_select -= selected[ifield];
+				to_select            -= this_selected;
+				normalization_factor -= proportions[ifield];
 			}
 		}
 
@@ -110,7 +112,7 @@ public:
 	}
 
 	template<class Agent2>
-	std::vector<long int> random_select(size_t N_select, const Agent2 &agent, std::vector<size_t> unselectable={}) const {
+	inline std::vector<double> random_select(size_t N_select, const Agent2 &agent, std::vector<size_t> unselectable={}) const {
 		return random_select(N_select, std::vector<const Agent2*>{&agent}, unselectable);
 	}
 };

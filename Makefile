@@ -1,4 +1,4 @@
-all: test simulation_1 simulation_2_from_data
+all: test simulation_1 simulation_2_from_data simulation_3_convergence_time
 
 test:
 	g++ -O3 test.cpp -o test.out

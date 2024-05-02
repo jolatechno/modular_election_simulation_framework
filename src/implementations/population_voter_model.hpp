@@ -15,11 +15,11 @@ public:
 
 	void operator()(AgentPopulation<voter> &agent, std::vector<const AgentPopulation<voter>*> neighbors) const {
 		if (agent.population > 0) {
-			std::vector<long int> self_selected         = random_select(N_select, agent);
-			std::vector<long int> neighborhood_selected = random_select(N_select, neighbors);
+			std::vector<double> self_selected         = random_select(N_select, agent);
+			std::vector<double> neighborhood_selected = random_select(N_select, neighbors);
 
 			long int N_candidate1_self = agent.population*agent.proportions[1] - self_selected[1] + neighborhood_selected[1];
-			agent.proportions[1] = ((double)N_candidate1_self)/((double)agent.population);
+			agent.proportions[1] = N_candidate1_self/((double)agent.population);
 			agent.proportions[0] = 1 - agent.proportions[1];
 		}
 	}

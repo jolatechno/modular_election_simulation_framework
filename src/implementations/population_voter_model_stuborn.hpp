@@ -40,17 +40,16 @@ public:
 	size_t N_select;
 	population_voter_stuborn_interaction_function(size_t N_select_) : N_select(N_select_) {}
 
-	void operator()(AgentPopulationVoterStuborn &agent, std::vector<const AgentPopulationVoterStuborn*> neighbors) const {
+	void operator()(AgentPopulation<voter_stuborn> &agent, std::vector<const AgentPopulation<voter_stuborn>*> neighbors) const {
 		if (agent.population > 0) {
-			std::vector<long int> self_selected         = random_select(N_select, agent,    {2, 3});
-			std::vector<long int> neighborhood_selected = random_select(N_select, neighbors);
+			std::vector<double> self_selected         = random_select(N_select, agent, {2, 3});
+			std::vector<double> neighborhood_selected = random_select(N_select, neighbors);
 
-			double   double_self_population = ((double)agent.population)*(agent.proportions[0] + agent.proportions[1]);
-			long int self_population        = (long int)double_self_population;
+			double self_population = agent.population*(agent.proportions[0] + agent.proportions[1]);
 
-			long int N_candidate1_self = agent.population*agent.proportions[1] + neighborhood_selected[1]+neighborhood_selected[3] - self_selected[1];
-			agent.proportions[1] =                    N_candidate1_self /agent.population;
-			agent.proportions[0] = (self_population - N_candidate1_self)/agent.population;
+			double N_candidate1_self = agent.population*agent.proportions[1] + neighborhood_selected[1]+neighborhood_selected[3] - self_selected[1];
+			agent.proportions[1] =                    N_candidate1_self /((double)agent.population);
+			agent.proportions[0] = (self_population - N_candidate1_self)/((double)agent.population);
 		}
 	}
 };
