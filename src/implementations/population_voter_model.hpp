@@ -19,7 +19,7 @@ public:
 			std::vector<long int> neighborhood_selected = random_select(N_select, neighbors);
 
 			long int N_candidate1_self = agent.population*agent.proportions[1] - self_selected[1] + neighborhood_selected[1];
-			agent.proportions[1] = N_candidate1_self/agent.population;
+			agent.proportions[1] = ((double)N_candidate1_self)/((double)agent.population);
 			agent.proportions[0] = 1 - agent.proportions[1];
 		}
 	}

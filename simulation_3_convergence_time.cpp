@@ -13,13 +13,12 @@
 #include "src/util/util.hpp"
 
 
-const size_t N_select = 15;
+const size_t N_select = 40;
 
       size_t N_nodes;
-const int    N_counties = 2;
-const int    N_try      = 50;
+const int    N_try      = 20;
 const int    N_it       = 2001;
-const int    n_save     = 10;
+const int    n_save     = 20;
 
 const char* input_file_name  = "output/preprocessed.h5";
 const char* output_file_name = "output/output_3.h5";
