@@ -16,7 +16,7 @@
 const size_t N_select               = 15;
 const double dt                     = 0.2;
 const double overtoon_multiplier    = 0.07;
-const double frustration_multiplier = 0.01;
+const double frustration_multiplier = 0.03;
 
 const double initial_radicalization_multiplier = 0.1;
 

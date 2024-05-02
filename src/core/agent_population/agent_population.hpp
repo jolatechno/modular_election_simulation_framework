@@ -8,7 +8,11 @@
 template<class Agent>
 class AgentPopulation : public AgentTemplate {
 public:
-	const std::vector<const Agent*> agent_types = (new Agent)->list_of_possible_agents();
+	const std::vector<const Agent*> agent_types = []() {
+		Agent* mock_agent = new Agent();
+		return mock_agent->list_of_possible_agents();
+	}();
+
 	size_t population = 1;
 	std::vector<double> proportions = std::vector<double>(agent_types.size());
 
@@ -56,9 +60,16 @@ public:
 	template<class Agent2>
 	std::vector<double> random_select(size_t N_select, std::vector<const Agent2*> neighbors, std::vector<size_t> unselectable={}) const {
 		static_assert(std::is_convertible<Agent2, AgentPopulation<Agent>>::value, "Error: Agent class is not compatible with the one used by AgentPopulationInteractionFunctionTemplate in random_select !");
-		size_t num_fields = (new Agent)->list_of_possible_agents().size();
+		if (neighbors.empty()) {
+			Agent* mock_agent = new Agent();
+			size_t num_fields = mock_agent->list_of_possible_agents().size();
 
-		std::vector<bool> is_selectable(num_fields, true);
+			return std::vector<double>(num_fields, 0);
+		}
+
+		size_t num_fields = neighbors[0]->proportions.size();
+
+		std::vector<char> is_selectable(num_fields, true);
 		for (size_t unselectable_field : unselectable) {
 			is_selectable[unselectable_field] = false;
 		}
@@ -164,7 +175,8 @@ public:
 	using variable_type = std::variant<bool, int, unsigned int, long, size_t, float, double>;
 	
 	std::vector<std::pair<std::string, int>> list_of_fields() const {
-		size_t num_fields = 1 + (new Agent)->list_of_possible_agents().size();
+		Agent* mock_agent = new Agent();
+		size_t num_fields = 1 + mock_agent->list_of_possible_agents().size();
 
 		std::vector<std::pair<std::string, int>> list_of_fields_(num_fields);
 		for (size_t ifield = 0; ifield < num_fields-1; ++ifield) {
