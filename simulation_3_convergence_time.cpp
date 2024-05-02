@@ -22,7 +22,7 @@ const int    N_it       = 2001;
 const int    n_save     = 10;
 
 const char* input_file_name  = "output/preprocessed.h5";
-const char* output_file_name = "output/output_2.h5";
+const char* output_file_name = "output/output_3.h5";
 
 template<class Type>
 double get_median(std::vector<Type> vec) {

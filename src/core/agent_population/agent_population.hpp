@@ -51,6 +51,71 @@ public:
 };
 
 template<class Agent>
+class AgentPopulationInteractionFunctionTemplate : public AgentInteractionFunctionTemplate<AgentPopulation<Agent>> {
+public:
+	template<class Agent2>
+	std::vector<long int> random_select(size_t N_select, std::vector<const Agent2*> neighbors, std::vector<size_t> unselectable={}) const {
+		static_assert(std::is_convertible<Agent2, AgentPopulation<Agent>>::value, "Error: Agent class is not compatible with the one used by AgentPopulationInteractionFunctionTemplate in random_select !");
+		size_t num_fields = (new Agent)->list_of_possible_agents().size();
+
+		std::vector<bool> is_selectable(num_fields, true);
+		for (size_t unselectable_field : unselectable) {
+			is_selectable[unselectable_field] = false;
+		}
+
+		std::vector<double> proportions(num_fields, 0);
+		double population=0.d, normalization_factor=0.d;
+		for (size_t ifield = 0; ifield < num_fields; ++ifield) {
+			if (is_selectable[ifield]) {
+				for (const Agent2 *neighbor : neighbors) {
+					proportions[ifield] += neighbor->proportions[ifield];
+
+					population += neighbor->population*neighbor->proportions[ifield];
+				}
+
+				normalization_factor += proportions[ifield];
+			}
+		}
+
+		std::vector<long int> selected(num_fields, 0);
+		if (normalization_factor == 0) {
+			return selected;
+		}
+
+		long int to_select = std::min((long int)N_select, (long int)population);
+		if (to_select == 0) {
+			return selected;
+		}
+
+		size_t last_idx = num_fields-1;
+		while (!is_selectable[last_idx]) {
+			--last_idx;
+		}
+
+		for (size_t ifield = 0; ifield < last_idx+1; ++ifield) {
+			if (ifield == last_idx) {
+				selected[ifield] = to_select;
+			} else if (is_selectable[ifield]) {
+				double select_proportion = std::max(0.d, std::min(1.d,
+					proportions[ifield]/normalization_factor));
+
+				std::binomial_distribution<long int> distribution(to_select, select_proportion);
+				selected[ifield] = distribution(get_random_generator());
+
+				to_select -= selected[ifield];
+			}
+		}
+
+		return selected;
+	}
+
+	template<class Agent2>
+	std::vector<long int> random_select(size_t N_select, const Agent2 &agent, std::vector<size_t> unselectable={}) const {
+		return random_select(N_select, std::vector<const Agent2*>{&agent}, unselectable);
+	}
+};
+
+template<class Agent>
 class PopulationElection : public ElectionTemplate<AgentPopulation<Agent>> {
 private:
 	const ElectionTemplate<Agent> *base_election_func;

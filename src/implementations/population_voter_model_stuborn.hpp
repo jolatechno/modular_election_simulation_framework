@@ -35,40 +35,23 @@ public:
 	}
 };
 
-class population_voter_stuborn_interaction_function : public AgentInteractionFunctionTemplate<AgentPopulationVoterStuborn> {
+class population_voter_stuborn_interaction_function : public AgentPopulationInteractionFunctionTemplate<voter_stuborn> {
 public:
 	size_t N_select;
 	population_voter_stuborn_interaction_function(size_t N_select_) : N_select(N_select_) {}
 
 	void operator()(AgentPopulationVoterStuborn &agent, std::vector<const AgentPopulationVoterStuborn*> neighbors) const {
-		const double N_population_self = agent.population*(agent.proportions[1] + agent.proportions[0]);
-		double       N_candidate1_self = agent.population* agent.proportions[1];
-		if (N_population_self <= N_select) {
-			return;
+		if (agent.population > 0) {
+			std::vector<long int> self_selected         = random_select(N_select, agent,    {2, 3});
+			std::vector<long int> neighborhood_selected = random_select(N_select, neighbors);
+
+			double   double_self_population = ((double)agent.population)*(agent.proportions[0] + agent.proportions[1]);
+			long int self_population        = (long int)double_self_population;
+
+			long int N_candidate1_self = agent.population*agent.proportions[1] + neighborhood_selected[1]+neighborhood_selected[3] - self_selected[1];
+			agent.proportions[1] =                    N_candidate1_self /agent.population;
+			agent.proportions[0] = (self_population - N_candidate1_self)/agent.population;
 		}
-		double candidate1_proportion_self = std::min(1.d, N_candidate1_self/N_population_self);
-
-		double N_population_neighborhood = agent.population;
-		double N_candidate1_neighborhood = agent.population*(agent.proportions[1] + agent.proportions[3]);
-		for (const AgentPopulationVoterStuborn* neighbor : neighbors) {
-			N_population_neighborhood += neighbor->population;
-			N_candidate1_neighborhood += neighbor->population*(neighbor->proportions[1] + neighbor->proportions[3]);
-		}
-		if (N_population_neighborhood <= N_select) {
-			return;
-		}
-		double candidate1_proportion_neighborhood = std::min(1.d, N_candidate1_neighborhood/N_population_neighborhood);
-
-		std::binomial_distribution<int> distribution_self(        N_select, candidate1_proportion_self);
-		std::binomial_distribution<int> distribution_neighborhood(N_select, candidate1_proportion_neighborhood);
-
-		int N_candidate1_selected_self         = distribution_self(get_random_generator());
-		int N_candidate1_selected_neighborhood = distribution_neighborhood(get_random_generator());
-
-		N_candidate1_self = std::min(N_population_self, std::max(0.d,
-			N_candidate1_self + N_candidate1_selected_neighborhood - N_candidate1_selected_self));
-		agent.proportions[1] =                      N_candidate1_self /agent.population;
-		agent.proportions[0] = (N_population_self - N_candidate1_self)/agent.population;
 	}
 };
 
