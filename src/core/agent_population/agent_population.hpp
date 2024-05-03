@@ -52,13 +52,36 @@ public:
 
 		randomize(mean_proportions);
 	}
-};
 
-template<class Agent>
-class AgentPopulationInteractionFunctionTemplate : public AgentInteractionFunctionTemplate<AgentPopulation<Agent>> {
-public:
+	void renormalize() {
+		double normalization_factor = 0.0;
+		for (double &proportion : proportions) {
+			proportion            = std::max(0.d, std::min(1.d, proportion));
+			normalization_factor += proportion;
+		}
+		for (double &proportion : proportions) {
+			proportion /= normalization_factor;
+		}
+	}
+	void integrate_proportion_variation(const std::vector<double> &agent_proportion_delta) {
+		size_t num_fields = proportions.size();
+		for (size_t ifield = 0; ifield < num_fields; ++ifield) {
+			proportions[ifield] = proportions[ifield] + agent_proportion_delta[ifield];
+		}
+
+		renormalize();
+	}
+	void integrate_population_variation(const std::vector<double> &agent_populations_delta) {
+		size_t num_fields = proportions.size();
+		for (size_t ifield = 0; ifield < num_fields; ++ifield) {
+			proportions[ifield] = (proportions[ifield]*population + agent_populations_delta[ifield])/population;
+		}
+
+		renormalize();
+	}
+
 	template<class Agent2>
-	std::vector<double> random_select(size_t N_select, std::vector<const Agent2*> neighbors, std::vector<size_t> unselectable={}) const {
+	std::vector<double> random_select(size_t N_select, const std::vector<const Agent2*> neighbors, const std::vector<size_t> &unselectable={}) const {
 		static_assert(std::is_convertible<Agent2, AgentPopulation<Agent>>::value, "Error: Agent class is not compatible with the one used by AgentPopulationInteractionFunctionTemplate in random_select !");
 		if (neighbors.empty()) {
 			Agent* mock_agent = new Agent();
@@ -121,10 +144,8 @@ public:
 
 		return selected;
 	}
-
-	template<class Agent2>
-	inline std::vector<double> random_select(size_t N_select, const Agent2 &agent, std::vector<size_t> unselectable={}) const {
-		return random_select(N_select, std::vector<const Agent2*>{&agent}, unselectable);
+	inline std::vector<double> random_select(size_t N_select, const std::vector<size_t> &unselectable={}) const {
+		return random_select(N_select, std::vector<const AgentPopulation<Agent>*>{this}, unselectable);
 	}
 };
 
@@ -158,14 +179,7 @@ class PopulationRenormalizeProportions : public AgentWiseUpdateFunctionTemplate<
 public:
 	PopulationRenormalizeProportions() {}
 	void operator()(AgentPopulation<Agent> &agent) const {
-		double normalization_factor = 0.0;
-		for (double &proportion : agent.proportions) {
-			proportion            = std::max(0.d, std::min(1.d, proportion));
-			normalization_factor += proportion;
-		}
-		for (double &proportion : agent.proportions) {
-			proportion /= normalization_factor;
-		}
+		agent.renormalize();
 	}
 };
 
