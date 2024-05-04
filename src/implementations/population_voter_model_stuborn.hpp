@@ -10,28 +10,18 @@
 class AgentPopulationVoterStuborn : public AgentPopulation<voter_stuborn> {
 public:
 	double stuborn_equilibrium[2] = {0, 0};
-	void randomize() {
-		AgentPopulation<voter_stuborn>::randomize();
-	}
-	void randomize(size_t pop_min, size_t pop_max) {
-		AgentPopulation<voter_stuborn>::randomize(pop_min, pop_max);
-	}
-	void randomize(size_t pop_min, size_t pop_max, double max_stuborn_equilibrium0, double max_stuborn_equilibrium1) {
-		std::uniform_real_distribution<double> distribution(0.0, 1.0);
-		stuborn_equilibrium[0] = distribution(get_random_generator())*max_stuborn_equilibrium0;
-		stuborn_equilibrium[1] = distribution(get_random_generator())*max_stuborn_equilibrium1;
 
-		randomize(pop_min, pop_max);
-	}
-	void randomize(std::vector<double> &mean_proportions, size_t pop_min, size_t pop_max) {
-		AgentPopulation<voter_stuborn>::randomize(mean_proportions, pop_min, pop_max);
-	}
-	void randomize(std::vector<double> &mean_proportions, size_t pop_min, size_t pop_max, double max_stuborn_equilibrium0, double max_stuborn_equilibrium1) {
-		std::uniform_real_distribution<double> distribution(0.0, 1.0);
-		stuborn_equilibrium[0] = distribution(get_random_generator())*max_stuborn_equilibrium0;
-		stuborn_equilibrium[1] = distribution(get_random_generator())*max_stuborn_equilibrium1;
+	template<typename ...Args>
+	void randomize(double mean_stuborn_equilibrium0, double mean_stuborn_equilibrium1, Args ...args) {
+		std::normal_distribution<double> distribution(1.0, 0.5);
+		stuborn_equilibrium[0] = std::max(0.d, distribution(get_random_generator())*mean_stuborn_equilibrium0);
+		stuborn_equilibrium[1] = std::max(0.d, distribution(get_random_generator())*mean_stuborn_equilibrium1);
 
-		randomize(mean_proportions, pop_min, pop_max);
+		AgentPopulation<voter_stuborn>::randomize(args...);
+	}
+	template<typename ...Args>
+	void randomize(Args ...args) {
+		randomize(0, 0, args...);
 	}
 };
 

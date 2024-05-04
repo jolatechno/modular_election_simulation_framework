@@ -16,41 +16,31 @@ public:
 	size_t population = 1;
 	std::vector<double> proportions = std::vector<double>(agent_types.size());
 
-	void randomize() {
-		std::normal_distribution<double> distribution(1.0, 0.5);
-
-		double normalization_factor = 0.0;
+	void randomize(const std::vector<double> &mean_proportions, const std::vector<double> &proportions_var) {
 		for (int i = 0; i < agent_types.size(); ++i) {
+		std::normal_distribution<double> distribution(mean_proportions[i], proportions_var[i]);
 			proportions[i] = std::max(1e-9d, distribution(get_random_generator()));
-			normalization_factor += proportions[i];
 		}
-		for (int i = 0; i < agent_types.size(); ++i) {
-			proportions[i] /= normalization_factor;
-		}
-	}
-	void randomize(std::vector<double> &mean_proportions) {
-		std::normal_distribution<double> distribution(1.0, 0.5);
 
-		double normalization_factor = 0.0;
-		for (int i = 0; i < agent_types.size(); ++i) {
-			proportions[i] = std::max(1e-9d, distribution(get_random_generator())*mean_proportions[i]);
-			normalization_factor += proportions[i];
-		}
-		for (int i = 0; i < agent_types.size(); ++i) {
-			proportions[i] /= normalization_factor;
-		}
+		renormalize();
 	}
-	void randomize(size_t pop_min, size_t pop_max) {
-		std::uniform_int_distribution<size_t> distribution(pop_min, pop_max);
-		population = distribution(get_random_generator());
-
-		randomize();
+	void randomize(const std::vector<double> &mean_proportions) {
+		std::vector<double> proportions_var(agent_types.size());
+		for (int ifield = 0; ifield < agent_types.size(); ++ifield) {
+			proportions_var[ifield] = mean_proportions[ifield]/2;
+		}
+		randomize(mean_proportions, proportions_var);
 	}
-	void randomize(std::vector<double> &mean_proportions, int pop_min, int pop_max) {
-		std::uniform_int_distribution<size_t> distribution(pop_min, pop_max);
-		population = distribution(get_random_generator());
-
+	void randomize() {
+		std::vector<double> mean_proportions(proportions.size(), 1.d);
 		randomize(mean_proportions);
+	}
+	template<typename... Args>
+	void randomize(size_t pop_mean, size_t pop_var, Args ...args) {
+		std::normal_distribution<double> distribution(pop_mean, pop_var);
+		population = std::max((long)0, (long)distribution(get_random_generator()));
+
+		randomize(args...);
 	}
 
 	void renormalize() {

@@ -55,9 +55,9 @@ int main() {
 	std::vector<std::vector<size_t>> counties = random_graphAgnostic_partition_graph(network, 3);
 	write_counties_to_file(counties, file);
 
-	network_randomize_agent_states_county(network, counties[0], std::vector<double>({0.6, 0.4, 0.1, 0.2}), 100, 200, 0.2, 0.2);
-	network_randomize_agent_states_county(network, counties[1], std::vector<double>({0.4, 0.6, 0.1, 0.2}), 50,  250, 0.2, 0.1);
-	network_randomize_agent_states_county(network, counties[2], std::vector<double>({0.5, 0.5, 0.1, 0.1}), 100, 300, 0.1, 0.17);
+	network_randomize_agent_states_county(network, counties[0], 0.2, 0.2, 150, 50,  std::vector<double>({0.6, 0.4, 0.1, 0.2}));
+	network_randomize_agent_states_county(network, counties[1], 0.2, 0.1, 150, 100, std::vector<double>({0.4, 0.6, 0.1, 0.2}));
+	network_randomize_agent_states_county(network, counties[2], 0.1, 0.2, 400, 100, std::vector<double>({0.5, 0.5, 0.1, 0.1}));
 	write_agent_states_to_file(network, agent_full_serializer, file, "/initial_state");
 
 

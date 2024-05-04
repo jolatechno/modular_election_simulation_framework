@@ -117,9 +117,9 @@ int main() {
 		preferential_attachment(test, 3);
 		std::vector<std::vector<size_t>> counties = random_graphAgnostic_partition_graph(test, 3);
 
-		network_randomize_agent_states_county(test, counties[0], std::vector<double>({0.6, 0.4}), 100, 200);
-		network_randomize_agent_states_county(test, counties[1], std::vector<double>({0.4, 0.6}), 50,  250);
-		network_randomize_agent_states_county(test, counties[2], std::vector<double>({0.5, 0.5}), 300, 500);
+		network_randomize_agent_states_county(test, counties[0], 150, 50,  std::vector<double>({0.6, 0.4}));
+		network_randomize_agent_states_county(test, counties[1], 150, 100, std::vector<double>({0.4, 0.6}));
+		network_randomize_agent_states_county(test, counties[2], 400, 100, std::vector<double>({0.5, 0.5}));
 
 
 		std::cout << "network.num_nodes() = " << test->num_nodes() << "\n";
@@ -173,9 +173,9 @@ int main() {
 		preferential_attachment(test, 3);
 		std::vector<std::vector<size_t>> counties = random_graphAgnostic_partition_graph(test, 3);
 
-		network_randomize_agent_states_county(test, counties[0], std::vector<double>({0.6, 0.4, 0.1, 0.2}), 100, 200, 0.2, 0.2);
-		network_randomize_agent_states_county(test, counties[1], std::vector<double>({0.4, 0.6, 0.1, 0.2}), 50,  250, 0.2, 0.1);
-		network_randomize_agent_states_county(test, counties[2], std::vector<double>({0.5, 0.5, 0.1, 0.1}), 100, 300, 0.1, 0.2);
+		network_randomize_agent_states_county(test, counties[0], 0.2, 0.2, 150, 50,  std::vector<double>({0.6, 0.4, 0.1, 0.2}));
+		network_randomize_agent_states_county(test, counties[1], 0.2, 0.1, 150, 100, std::vector<double>({0.4, 0.6, 0.1, 0.2}));
+		network_randomize_agent_states_county(test, counties[2], 0.1, 0.2, 400, 100, std::vector<double>({0.5, 0.5, 0.1, 0.1}));
 
 
 		std::cout << "network.num_nodes() = " << test->num_nodes() << "\n";
