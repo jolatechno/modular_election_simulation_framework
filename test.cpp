@@ -7,8 +7,10 @@
 #include "src/core/agent_population/agent_population.hpp"
 #include "src/implementations/voter_model.hpp"
 #include "src/implementations/voter_model_stuborn.hpp"
+#include "src/implementations/Nvoter_model.hpp"
 #include "src/implementations/population_voter_model.hpp"
 #include "src/implementations/population_voter_model_stuborn.hpp"
+#include "src/implementations/population_Nvoter_model.hpp"
 #include "src/util/util.hpp"
 
 
@@ -109,6 +111,58 @@ int main() {
 		}
 	}
 
+	std::cout << "\n\n\nN VOTER MODEL:\n\n";
+
+	{
+		const int N_candidates = 3;
+		auto *test = new SocialNetworkTemplate<Nvoter<N_candidates>>(50);
+
+		preferential_attachment(test, 2);
+
+		std::vector<std::vector<size_t>> counties = random_graphAgnostic_partition_graph(test, 3);
+		network_randomize_agent_states_county(test, counties[0], std::vector<double>{0.5, 0.2, 0.3});
+		network_randomize_agent_states_county(test, counties[1], std::vector<double>{0.3, 0.5, 0.2});
+		network_randomize_agent_states_county(test, counties[2], std::vector<double>{0.2, 0.3, 0.5});
+
+		test->add_connection(1, 2);
+		test->add_connection(1, 0);
+
+		(*test)[1].candidate = 0;
+		(*test)[2].candidate = 2;
+
+		std::cout << "network.num_nodes() = " << test->num_nodes() << "\n";
+		std::cout << "network.degrees() = " << test->degrees() << "\n";
+		std::cout << "network[1] = " << (*test)[1].candidate << "\n";
+		std::cout << "network[2] = " << (*test)[2].candidate << "\n";
+		std::cout << "network.are_neighbors(1, 2) = " << test->are_neighbors(1, 2) << "\n";
+		std::cout << "network.are_neighbors(0, 2) = " << test->are_neighbors(0, 2) << "\n";
+		std::cout << "network.neighbors(1) = " << test->neighbors(1) << "\n";
+
+		Nvoter_majority_election<N_candidates, Nvoter<N_candidates>> *election = new Nvoter_majority_election<N_candidates, Nvoter<N_candidates>>();
+
+		Nvoter_majority_election_result<N_candidates> *result = (Nvoter_majority_election_result<N_candidates>*)test->get_election_results(election);
+		std::cout << "\nnetwork->get_election_results(...) = " << result->result << " (" << result->proportions << "%)\n";
+
+		auto results = test->get_election_results(counties, election);
+		std::cout << "network->get_election_results(counties, ...): \n";
+		for (size_t i = 0; i < counties.size(); i++) {
+			Nvoter_majority_election_result<N_candidates> *county_result = (Nvoter_majority_election_result<N_candidates>*)results[i];
+			std::cout << "\t" << county_result->result  << " (" << county_result->proportions << ") for county: " << counties[i] << "\n";
+		}
+		std::cout << "\n";
+
+		Nvoter_interaction_function<N_candidates> *interaction = new Nvoter_interaction_function<N_candidates>();
+		for (int i = 0; i < 10; ++i) {
+			if (i%1 == 0) {
+				Nvoter_majority_election_result<N_candidates> *result = (Nvoter_majority_election_result<N_candidates>*)test->get_election_results(election);
+				std::cout << "network->get_election_results(...) = " << result->result << " (" << result->proportions << ")\n";
+
+			}
+
+			test->interact(interaction);
+		}
+	}
+
 	std::cout << "\n\n\nPOPULATION DYNAMIC:\n\n";
 
 	{
@@ -165,7 +219,7 @@ int main() {
 		}
 	}
 
-	std::cout << "\n\n\nPOPULATION DYNAMIC (+ stuborn voters):\n\n";
+	std::cout << "\n\n\nSTUBORN VOTERS POPULATION DYNAMIC:\n\n";
 
 	{
 		auto *test = new SocialNetworkTemplate<AgentPopulationVoterStuborn>(800);
@@ -240,6 +294,63 @@ int main() {
 			test->election_retroinfluence(result, frustration);
 			test->election_retroinfluence(counties, results, overton);
 			test->election_retroinfluence(counties, results, frustration);
+			test->update_agentwise(renormalize);
+		}
+	}
+
+	std::cout << "\n\n\nN CANDIDATES POPULATION DYNAMIC:\n\n";
+
+	{
+		const int N_candidates = 3;
+		auto *test = new SocialNetworkTemplate<AgentPopulation<Nvoter<N_candidates>>>(100);
+
+		preferential_attachment(test, 3);
+		std::vector<std::vector<size_t>> counties = random_graphAgnostic_partition_graph(test, 3);
+
+		network_randomize_agent_states_county(test, counties[0], 150, 50,  std::vector<double>({0.5, 0.3, 0.2}));
+		network_randomize_agent_states_county(test, counties[1], 150, 100, std::vector<double>({0.2, 0.5, 0.3}));
+		network_randomize_agent_states_county(test, counties[2], 400, 100, std::vector<double>({0.3, 0.2, 0.5}));
+
+
+		std::cout << "network.num_nodes() = " << test->num_nodes() << "\n";
+		std::cout << "network.degrees() = " << test->degrees() << "\n";
+		std::cout << "network.neighbors(0) = " << test->neighbors(0) << "\n";
+		std::cout << "network[1].population = " << (*test)[1].population << "\n";
+		std::cout << "network[2].proportions = " << (*test)[1].proportions << "\n";
+
+		PopulationElection<Nvoter<N_candidates>> *election = new PopulationElection<Nvoter<N_candidates>>(new Nvoter_majority_election<N_candidates, Nvoter<N_candidates>>());
+
+		Nvoter_majority_election_result<N_candidates> *result = (Nvoter_majority_election_result<N_candidates>*)test->get_election_results(election);
+		std::cout << "\nnetwork->get_election_results(...) = " << result->result << " (" << result->proportions << ")\n";
+
+		auto results = test->get_election_results(counties, election);
+		std::cout << "network->get_election_results(counties, ...): \n";
+		for (int i = 0; i < counties.size(); i++) {
+			Nvoter_majority_election_result<N_candidates> *county_result = (Nvoter_majority_election_result<N_candidates>*)results[i];
+			std::cout << "\t" << county_result->result  << " (" << county_result->proportions << ") for county: " << counties[i] << "\n";
+		}
+		std::cout << "\n";
+
+
+		population_Nvoter_interaction_function<N_candidates> *interaction = new population_Nvoter_interaction_function<N_candidates>(20);
+
+		PopulationRenormalizeProportions<Nvoter<N_candidates>> *renormalize = new PopulationRenormalizeProportions<Nvoter<N_candidates>>();
+
+		for (int i = 0; i < 51; ++i) {
+			if (i%10 == 0) {
+				Nvoter_majority_election_result<N_candidates> *result = (Nvoter_majority_election_result<N_candidates>*)test->get_election_results(election);
+				std::cout << "\nnetwork->get_election_results(...) = " << result->result << " (" << result->proportions << ")\n";
+
+				auto results = test->get_election_results(counties, election);
+				std::cout << "network->get_election_results(counties, ...): \n";
+				for (int i = 0; i < counties.size(); i++) {
+					Nvoter_majority_election_result<N_candidates> *county_result = (Nvoter_majority_election_result<N_candidates>*)results[i];
+					std::cout << "\t" << county_result->result  << " (" << county_result->proportions << ") for county: " << counties[i] << "\n";
+				}
+				std::cout << "\n";
+			}
+
+			test->interact(interaction);
 			test->update_agentwise(renormalize);
 		}
 	}
