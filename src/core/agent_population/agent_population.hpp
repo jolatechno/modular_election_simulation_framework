@@ -18,7 +18,7 @@ public:
 
 	void randomize(const std::vector<double> &mean_proportions, const std::vector<double> &proportions_var) {
 		for (int i = 0; i < agent_types.size(); ++i) {
-		std::normal_distribution<double> distribution(mean_proportions[i], proportions_var[i]);
+			std::normal_distribution<double> distribution(mean_proportions[i], proportions_var[i]);
 			proportions[i] = std::max(1e-9d, distribution(get_random_generator()));
 		}
 

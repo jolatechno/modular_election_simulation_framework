@@ -10,6 +10,7 @@
 #include "src/implementations/population_Nvoter_model.hpp"
 #include "src/util/util.hpp"
 
+
 const std::vector<std::string> candidates_from_left_to_right = {
 	"ARTHAUD",
 	"POUTOU",

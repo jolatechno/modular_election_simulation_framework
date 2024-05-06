@@ -79,12 +79,12 @@ public:
 };
 
 template<int N_candidates, class Agent>
-class Nvoter_majority_election : public ElectionTemplate<Nvoter<N_candidates>> {
+class Nvoter_majority_election : public ElectionTemplate<Agent> {
 public:
 	Nvoter_majority_election_result<N_candidates>* get_neutral_election_result() const {
 		return new Nvoter_majority_election_result<N_candidates>();
 	}
-	Nvoter_majority_election_result<N_candidates>* operator()(const Nvoter<N_candidates>& agent) const {
+	Nvoter_majority_election_result<N_candidates>* operator()(const Agent& agent) const {
 		Nvoter_majority_election_result<N_candidates> *result = new Nvoter_majority_election_result<N_candidates>();
 
 		result->votes[agent.candidate] = 1;
@@ -116,7 +116,7 @@ class NVoterMajorityElectionSerializer : public ElectionResultSerializerTemplate
 
 		for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
 			std::string field_name = "proportion_" + std::to_string(icandidate);
-			fields.push_back({field_name, 4});
+			fields.push_back({field_name, 6});
 		}
 
 		return fields;
