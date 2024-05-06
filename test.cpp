@@ -8,9 +8,11 @@
 #include "src/implementations/voter_model.hpp"
 #include "src/implementations/voter_model_stuborn.hpp"
 #include "src/implementations/Nvoter_model.hpp"
+#include "src/implementations/Nvoter_stuborn_model.hpp"
 #include "src/implementations/population_voter_model.hpp"
 #include "src/implementations/population_voter_model_stuborn.hpp"
 #include "src/implementations/population_Nvoter_model.hpp"
+#include "src/implementations/population_Nvoter_stuborn_model.hpp"
 #include "src/util/util.hpp"
 
 
@@ -351,6 +353,76 @@ int main() {
 			}
 
 			test->interact(interaction);
+			test->update_agentwise(renormalize);
+		}
+	}
+
+	std::cout << "\n\n\nN CANDIDATES STUBORN VOTERS POPULATION DYNAMIC:\n\n";
+
+	{
+		const int N_candidates = 3;
+		auto *test = new SocialNetworkTemplate<AgentPopulationNVoterStuborn<N_candidates>>(200);
+
+		preferential_attachment(test, 3);
+		std::vector<std::vector<size_t>> counties = random_graphAgnostic_partition_graph(test, 3);
+
+		network_randomize_agent_states_county(test, counties[0], std::vector<double>({0.07, 0.03, 0.04}), 150, 50,  std::vector<double>({0.5, 0.2, 0.3, 0.2, 0.1, 0.1}));
+		network_randomize_agent_states_county(test, counties[1], std::vector<double>({0.04, 0.07, 0.03}), 150, 100, std::vector<double>({0.3, 0.5, 0.2, 0.1, 0.2, 0.1}));
+		network_randomize_agent_states_county(test, counties[2], std::vector<double>({0.03, 0.04, 0.07}), 400, 100, std::vector<double>({0.2, 0.3, 0.5, 0.1, 0.1, 0.2}));
+
+
+		std::cout << "network.num_nodes() = " << test->num_nodes() << "\n";
+		std::cout << "network.degrees() = " << test->degrees() << "\n";
+		std::cout << "network.neighbors(0) = " << test->neighbors(0) << "\n";
+		std::cout << "network[1].population = " << (*test)[1].population << "\n";
+		std::cout << "network[2].proportions = " << (*test)[1].proportions << "\n";
+		std::cout << "network[3].stuborn_equilibrium[0] = " << (*test)[3].stuborn_equilibrium[0] << "\n";
+
+		PopulationElection<Nvoter_stuborn<N_candidates>> *election = new PopulationElection<Nvoter_stuborn<N_candidates>>(new Nvoter_majority_election<N_candidates, Nvoter_stuborn<N_candidates>>());
+
+		Nvoter_majority_election_result<N_candidates> *result = (Nvoter_majority_election_result<N_candidates>*)test->get_election_results(election);
+		std::cout << "\nnetwork->get_election_results(...) = " << result->result << " (" << result->proportions << ")\n";
+
+		auto results = test->get_election_results(counties, election);
+
+		std::cout << "network->get_election_results(counties, ...): \n";
+		for (int i = 0; i < counties.size(); i++) {
+			Nvoter_majority_election_result<N_candidates> *county_result = (Nvoter_majority_election_result<N_candidates>*)results[i];
+			std::cout << "\t" << county_result->result  << " (" << county_result->proportions << ") for county: " << counties[i] << "\n";
+
+		}
+		std::cout << "\n";
+
+
+		double dt = 0.2;
+		population_Nvoter_stuborn_interaction_function<N_candidates> *interaction = new population_Nvoter_stuborn_interaction_function<N_candidates>(10);
+		Nvoter_stuborn_equilibirum_function<N_candidates>            *agentwise   = new Nvoter_stuborn_equilibirum_function           <N_candidates>(dt);
+		Nvoter_stuborn_overtoon_effect<N_candidates>                 *overton     = new Nvoter_stuborn_overtoon_effect                <N_candidates>(dt, 0.015);
+		Nvoter_stuborn_frustration_effect<N_candidates>              *frustration = new Nvoter_stuborn_frustration_effect             <N_candidates>(dt, 0.02);
+
+		PopulationRenormalizeProportions<Nvoter_stuborn<N_candidates>> *renormalize = new PopulationRenormalizeProportions<Nvoter_stuborn<N_candidates>>();
+
+		for (int i = 0; i < 2001; ++i) {
+			if (i%400 == 0) {
+				result = (Nvoter_majority_election_result<N_candidates>*)test->get_election_results(election);
+				std::cout << "\nnetwork->get_election_results(...) = " << result->result << " (" << result->proportions << ")\n";
+
+				results = test->get_election_results(counties, election);
+
+				std::cout << "network->get_election_results(counties, ...): \n";
+				for (int i = 0; i < counties.size(); i++) {
+					Nvoter_majority_election_result<N_candidates> *county_result = (Nvoter_majority_election_result<N_candidates>*)results[i];
+					std::cout << "\t" << county_result->result  << " (" << county_result->proportions << ") for county: " << counties[i] << "\n";
+				}
+				std::cout << "\n";
+			}
+
+			test->interact(interaction);
+			test->update_agentwise(agentwise);
+			test->election_retroinfluence(result, overton);
+			test->election_retroinfluence(result, frustration);
+			test->election_retroinfluence(counties, results, overton);
+			test->election_retroinfluence(counties, results, frustration);
 			test->update_agentwise(renormalize);
 		}
 	}

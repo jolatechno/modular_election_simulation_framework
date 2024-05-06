@@ -19,7 +19,7 @@ public:
 			stuborn_equilibrium[i] = std::max(0.d, distribution(get_random_generator()));
 		}
 
-		AgentPopulation<voter_stuborn>::randomize(args...);
+		AgentPopulation<Nvoter_stuborn<N_candidates>>::randomize(args...);
 	}
 	template<typename ...Args>
 	void randomize(const std::vector<double> &mean_equilibirum, Args ...args) {
@@ -28,7 +28,7 @@ public:
 			stuborn_equilibrium[i] = std::max(0.d, distribution(get_random_generator()));
 		}
 
-		AgentPopulation<voter_stuborn>::randomize(args...);
+		AgentPopulation<Nvoter_stuborn<N_candidates>>::randomize(args...);
 	}
 	template<typename ...Args>
 	void randomize(double mean_equilibirum, double equilibrium_var, Args ...args) {
