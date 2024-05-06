@@ -6,12 +6,25 @@
 #include "src/core/networks/network_partition.hpp"
 #include "src/core/networks/network_util.hpp"
 #include "src/core/agent_population/agent_population.hpp"
-#include "src/implementations/voter_model.hpp"
-#include "src/implementations/voter_model_stuborn.hpp"
-#include "src/implementations/population_voter_model.hpp"
-#include "src/implementations/population_voter_model_stuborn.hpp"
+#include "src/implementations/Nvoter_model.hpp"
+#include "src/implementations/population_Nvoter_model.hpp"
 #include "src/util/util.hpp"
 
+const std::vector<std::string> candidates_from_left_to_right = {
+	"ARTHAUD",
+	"POUTOU",
+	"MÉLENCHON",
+	"ROUSSEL",
+	"HIDALGO",
+	"JADOT",
+	"LASSALLE",
+	"MACRON",
+	"PÉCRESSE",
+	"DUPONT_AIGNAN",
+	"LE_PEN",
+	"ZEMMOUR"
+};
+const int N_candidates = 12;
 
 const size_t N_select = 40;
 
@@ -35,12 +48,12 @@ int main() {
 	H5::H5File output_file(output_file_name, H5F_ACC_TRUNC);
 	H5::H5File input_file( input_file_name,  H5F_ACC_RDWR);
 
-	auto *interaction      = new population_voter_interaction_function(N_select);
-	auto *renormalize      = new PopulationRenormalizeProportions<voter>();
-	auto *agent_serializer = new AgentPopulationSerializer<voter>();
+	auto *interaction      = new population_Nvoter_interaction_function<N_candidates>(N_select);
+	auto *renormalize      = new PopulationRenormalizeProportions<Nvoter<N_candidates>>();
+	auto *agent_serializer = new AgentPopulationSerializer<Nvoter<N_candidates>>();
 
 
-	auto *network = new SocialNetworkTemplate<AgentPopulation<voter>>();
+	auto *network = new SocialNetworkTemplate<AgentPopulation<Nvoter<N_candidates>>>();
 	read_network_from_file(network, input_file);
 	write_network_to_file( network, output_file);
 	N_nodes = network->num_nodes();
@@ -64,27 +77,27 @@ int main() {
 	H5::Group demo_data = input_file.openGroup("demo_data");
 	H5ReadVector(demo_data, populations,  "voter_population");
 
-	std::vector<double> vote_macron, vote_melenchon;
+	std::vector<std::vector<double>> votes(N_candidates);
 	H5::Group vote_data = input_file.openGroup("vote_data");
-	H5ReadVector(vote_data, vote_macron,    "PROP_Voix_MACRON");
-	H5ReadVector(vote_data, vote_melenchon, "PROP_Voix_MÉLENCHON");
+	for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
+		std::string field_name = "PROP_Voix_" + candidates_from_left_to_right[icandidate];
+		H5ReadVector(vote_data, votes[icandidate], field_name.c_str());
+	}
 
 	for (size_t node = 0; node < N_nodes; ++node) {
-		double total_vote = vote_macron[node] + vote_melenchon[node];
 
-		double prop_macron    = vote_macron[node]/total_vote;
-		double prop_melenchon = vote_melenchon[node]/total_vote;
+		for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
+			(*network)[node].proportions[icandidate] = votes[icandidate][node];
+		}
 
 		(*network)[node].population = (size_t)populations[node];
-
-		(*network)[node].proportions[0] = prop_macron;
-		(*network)[node].proportions[1] = prop_melenchon;
 	}
+	network->update_agentwise(renormalize);
 
 	write_agent_states_to_file(network, agent_serializer, output_file, "/initial_state");
 
 
-	voter_majority_election_result* general_election_results;
+	Nvoter_majority_election_result<N_candidates>* general_election_results;
 	std::vector<ElectionResultTemplate*> counties_election_results, stuborness_results;
 	for (int itry = 0; itry < N_try; ++itry) {
 		if (itry > 0) {

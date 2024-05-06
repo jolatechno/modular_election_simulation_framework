@@ -156,7 +156,7 @@ public:
 
 		return values;
 	}
-	void read(voter &agent, const std::vector<variable_type> &values) const {
+	void read(Nvoter<N_candidates> &agent, const std::vector<variable_type> &values) const {
 		agent.candidate = std::get<int>(values[0]);
 	}
 };

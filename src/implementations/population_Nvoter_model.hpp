@@ -14,7 +14,7 @@ public:
 	size_t N_select;
 	population_Nvoter_interaction_function(size_t N_select_) : N_select(N_select_) {}
 
-	void operator()(AgentPopulation<voter> &agent, std::vector<const AgentPopulation<voter>*> neighbors) const {
+	void operator()(AgentPopulation<Nvoter<N_candidates>> &agent, std::vector<const AgentPopulation<Nvoter<N_candidates>>*> neighbors) const {
 		if (agent.population > 0) {
 			std::vector<double> self_selected         = agent.random_select(N_select);
 			std::vector<double> neighborhood_selected = agent.random_select(N_select, neighbors);
