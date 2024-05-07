@@ -34,17 +34,19 @@ const std::vector<std::string> candidates_from_left_to_right = {
 };
 const int N_candidates = 12;
 
-const size_t N_select               = 15;
-const double dt                     = 0.2;
-const double overtoon_multiplier    = 0.07;
-const double frustration_multiplier = 0.03;
+const size_t N_select                           = 15;
+const double dt                                 = 0.2;
+const double overtoon_multiplier                = 0.7;
+const double overtoon_radicalization_multiplier = 0.2;
+const double overtoon_radius                    = 0.25;
+const double frustration_multiplier             = 0.07;
 
 const double initial_radicalization_multiplier = 0.1;
 
       size_t N_nodes;
 const int    N_counties = 2;
 const int    N_try      = 10;
-const int    N_it       = 2001;
+const int    N_it       = 2101;
 const int    n_election = 350;
 const int    n_save     = 15;
 
@@ -68,7 +70,7 @@ int main() {
 
 	auto *interaction = new population_Nvoter_stuborn_interaction_function<N_candidates>(N_select);
 	auto *agentwise   = new Nvoter_stuborn_equilibirum_function<           N_candidates>(dt);
-	auto *overton     = new Nvoter_stuborn_overtoon_effect<                N_candidates>(dt, overtoon_multiplier);
+	auto *overton     = new Nvoter_stuborn_overtoon_effect<                N_candidates>(dt, overtoon_multiplier, overtoon_radicalization_multiplier, overtoon_radius);
 	auto *frustration = new Nvoter_stuborn_frustration_effect<             N_candidates>(dt, frustration_multiplier);
 
 	auto *renormalize = new PopulationRenormalizeProportions<Nvoter_stuborn<N_candidates>>();

@@ -105,45 +105,45 @@ private:
 			return std::pow(normalized_distance, exponent);
 		}
 	}
-public:
-	double dt, multiplier, deradicalization_multiplier, radius, exponent;
+public:	
+	double dt, multiplier, radicalization_multiplier, radius, exponent;
 
-	Nvoter_stuborn_overtoon_effect(double dt_=0.1, double multiplier_=1, double deradicalization_multiplier_=0.5, double radius_=0.2, double exponent_=3) :
-		dt(dt_), multiplier(multiplier_), deradicalization_multiplier(deradicalization_multiplier_), exponent(exponent_) {}
+	Nvoter_stuborn_overtoon_effect(double dt_=0.1, double multiplier_=1, double radicalization_multiplier_=1, double radius_=0.2, double exponent_=3) :
+		dt(dt_), multiplier(multiplier_), radicalization_multiplier(radicalization_multiplier_), exponent(exponent_) {}
 	void operator()(AgentPopulationNVoterStuborn<N_candidates>& agent, const ElectionResultTemplate* election_result_) const {
 		Nvoter_majority_election_result<N_candidates> *election_result = (Nvoter_majority_election_result<N_candidates>*)election_result_;
 
 		double election_mean_political_position=0.d, mean_political_position=0.d;
 		for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
 			election_mean_political_position += icandidate*election_result->proportions[icandidate];
-			mean_political_position          += icandidate*           agent.proportions[icandidate];
+			mean_political_position          += icandidate*          (agent.proportions[icandidate] + agent.proportions[N_candidates+icandidate]);
 		}
 
 		std::vector<double> proportions_variations(2*N_candidates, 0.d);
 		for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
 			double flux                = dt*multiplier*overtoon_distance(icandidate - election_mean_political_position);
-			double radicalization_flux = deradicalization_multiplier*flux;
+			double radicalization_flux = radicalization_multiplier*flux;
 
 			if (radicalization_flux > 0) {
 				radicalization_flux *= agent.proportions[icandidate];
 
-				proportions_variations[             icandidate] = -radicalization_flux;
-				proportions_variations[N_candidates+icandidate] =  radicalization_flux;
+				proportions_variations[             icandidate] += -radicalization_flux;
+				proportions_variations[N_candidates+icandidate] +=  radicalization_flux;
 			} else {
 				radicalization_flux *= agent.proportions[N_candidates+icandidate];
 
-				proportions_variations[             icandidate] =  radicalization_flux;
-				proportions_variations[N_candidates+icandidate] = -radicalization_flux;
+				proportions_variations[             icandidate] += -radicalization_flux;
+				proportions_variations[N_candidates+icandidate] +=  radicalization_flux;
 			}
 
 			if (flux < 0) {
 				flux *= agent.proportions[icandidate];
 				if (mean_political_position > icandidate) {
-					proportions_variations[icandidate]   = -flux;
-					proportions_variations[icandidate+1] =  flux;
+					proportions_variations[icandidate]   +=  flux;
+					proportions_variations[icandidate+1] += -flux;
 				} else {
-					proportions_variations[icandidate]   = -flux;
-					proportions_variations[icandidate-1] =  flux;
+					proportions_variations[icandidate]   +=  flux;
+					proportions_variations[icandidate-1] += -flux;
 				}
 			}
 		}
