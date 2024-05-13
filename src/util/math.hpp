@@ -33,8 +33,13 @@ namespace util::math {
 	template<typename Type>
 	double get_KLdiv(const std::vector<Type> &P, const std::vector<Type> &Q) {
 		double KLdiv = 0.d;
+		static const double epsilon = 1e-18;
 
-		/* TODO */
+		for (size_t i = 0; i < P.size(); ++i) {
+			if (P[i] > epsilon) {
+				KLdiv += P[i]*std::log2(P[i]/std::max(epsilon, (double)Q[i]));
+			}
+		}
 
 		return KLdiv;
 	}
