@@ -37,8 +37,9 @@ namespace segregation::multiscalar {
 		std::vector<std::vector<Type>> trajectory(indexes.size(), std::vector<Type>(indexes.size()));
 
 		for (size_t i = 0; indexes.size(); ++i) {
+			Type total = 0.d;
 			for (size_t j = 0; j < indexes[i].size(); ++j) {
-				trajectory[i][j] = vect[indexes[i][j]];
+				trajectory[i][j] = trajectory[i][j] + vect[indexes[i][j]];
 			}
 		}
 
@@ -47,10 +48,22 @@ namespace segregation::multiscalar {
 
 	template<typename Type>
 	std::vector<std::vector<std::vector<Type>>> get_trajectories(const std::vector<std::vector<Type>> &vects, const std::vector<std::vector<size_t>> &indexes) {
-		std::vector<std::vector<std::vector<Type>>> trajectories;
+		std::vector<std::vector<std::vector<Type>>> trajectories(vects.size(),
+			std::vector<std::vector<Type>>(indexes.size(), std::vector<Type>(indexes[0].size())));
 
-		for (const auto &vect : vects) {
-			trajectories.push_back(get_trajectories(vect, indexes));
+		for (size_t i = 0; indexes.size(); ++i) {
+			Type total = 0.d;
+			std::vector<Type> running_sum(vects.size(), 0);
+
+			for (size_t j = 0; j < indexes[i].size(); ++j) {
+				for (size_t k = 0; k < vects.size(); ++k) {
+					running_sum[k] += vects[k][indexes[i][j]];
+					total          += vects[k][indexes[i][j]];
+				}
+				for (size_t k = 0; k < vects.size(); ++k) {
+					trajectories[k][i][j] = running_sum[k]/total;
+				}
+			}
 		}
 		
 		return trajectories;
