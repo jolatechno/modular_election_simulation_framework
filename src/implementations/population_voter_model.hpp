@@ -8,19 +8,23 @@
 #include "../util/util.hpp"
 
 
-class population_voter_interaction_function : public AgentInteractionFunctionTemplate<AgentPopulation<voter>> {
-public:
-	size_t N_select;
-	population_voter_interaction_function(size_t N_select_) : N_select(N_select_) {}
+namespace BPsimulation::implem {
+	class population_voter_interaction_function : public core::agent::AgentInteractionFunctionTemplate<core::agent::population::AgentPopulation<voter>> {
+	public:
+		size_t N_select;
+		population_voter_interaction_function(size_t N_select_) : N_select(N_select_) {}
 
-	void operator()(AgentPopulation<voter> &agent, std::vector<const AgentPopulation<voter>*> neighbors) const {
-		if (agent.population > 0) {
-			std::vector<double> self_selected         = agent.random_select(N_select);
-			std::vector<double> neighborhood_selected = agent.random_select(N_select, neighbors);
+		void operator()(core::agent::population::AgentPopulation<voter> &agent,
+			std::vector<const core::agent::population::AgentPopulation<voter>*> neighbors) const
+			{
+			if (agent.population > 0) {
+				std::vector<double> self_selected         = agent.random_select(N_select);
+				std::vector<double> neighborhood_selected = agent.random_select(N_select, neighbors);
 
-			agent.integrate_population_variation({
-				neighborhood_selected[0] - self_selected[0],
-				neighborhood_selected[1] - self_selected[1]});
+				agent.integrate_population_variation({
+					neighborhood_selected[0] - self_selected[0],
+					neighborhood_selected[1] - self_selected[1]});
+			}
 		}
-	}
-};
+	};
+}

@@ -49,14 +49,14 @@ int main() {
 	H5::H5File output_file(output_file_name, H5F_ACC_TRUNC);
 	H5::H5File input_file( input_file_name,  H5F_ACC_RDWR);
 
-	auto *interaction      = new population_Nvoter_interaction_function<N_candidates>(N_select);
-	auto *renormalize      = new PopulationRenormalizeProportions<Nvoter<N_candidates>>();
-	auto *agent_serializer = new AgentPopulationSerializer<Nvoter<N_candidates>>();
+	auto *interaction      = new BPsimulation::implem::population_Nvoter_interaction_function<N_candidates>(N_select);
+	auto *renormalize      = new BPsimulation::core::agent::population::PopulationRenormalizeProportions<BPsimulation::implem::Nvoter<N_candidates>>();
+	auto *agent_serializer = new BPsimulation::core::agent::population::AgentPopulationSerializer<BPsimulation::implem::Nvoter<N_candidates>>();
 
 
-	auto *network = new SocialNetworkTemplate<AgentPopulation<Nvoter<N_candidates>>>();
-	read_network_from_file(network, input_file);
-	write_network_to_file( network, output_file);
+	auto *network = new BPsimulation::SocialNetwork<BPsimulation::core::agent::population::AgentPopulation<BPsimulation::implem::Nvoter<N_candidates>>>();
+	BPsimulation::io::read_network_from_file(network, input_file);
+	BPsimulation::io::write_network_to_file( network, output_file);
 	N_nodes = network->num_nodes();
 
 
@@ -71,7 +71,7 @@ int main() {
 		counties[group].push_back(node);
 	}
 
-	write_counties_to_file(counties, output_file);
+	BPsimulation::io::write_counties_to_file(counties, output_file);
 
 
 	std::vector<double> populations;
@@ -95,14 +95,14 @@ int main() {
 	}
 	network->update_agentwise(renormalize);
 
-	write_agent_states_to_file(network, agent_serializer, output_file, "/initial_state");
+	BPsimulation::io::write_agent_states_to_file(network, agent_serializer, output_file, "/initial_state");
 
 
-	Nvoter_majority_election_result<N_candidates>* general_election_results;
-	std::vector<ElectionResultTemplate*> counties_election_results, stuborness_results;
+	BPsimulation::implem::Nvoter_majority_election_result<N_candidates>* general_election_results;
+	std::vector<BPsimulation::core::election::ElectionResultTemplate*> counties_election_results, stuborness_results;
 	for (int itry = 0; itry < N_try; ++itry) {
 		if (itry > 0) {
-			read_agent_states_from_file(network, agent_serializer, output_file, "/initial_state");
+			BPsimulation::io::read_agent_states_from_file(network, agent_serializer, output_file, "/initial_state");
 		}
 
 		std::cout << "try " << itry+1 << "/" << N_try << "\n";
@@ -110,7 +110,7 @@ int main() {
 		for (int it = 0; it < N_it; ++it) {
 			if (it%n_save == 0 && it > 0) {
 				std::string dir_name = "/states_" + std::to_string(itry) + "_" + std::to_string(it);
-				write_agent_states_to_file(network, agent_serializer, output_file, dir_name.c_str());
+				BPsimulation::io::write_agent_states_to_file(network, agent_serializer, output_file, dir_name.c_str());
 			}
 
 			network->interact(interaction);
