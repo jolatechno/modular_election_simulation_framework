@@ -124,22 +124,22 @@ namespace segregation::multiscalar {
 	}
 
 	template<typename Type>
-	std::vector<std::vector<Type>> get_focal_distances(const std::vector<std::vector<double>> &KLdiv_trajectories, const std::vector<double> &convergence_thresholds, const std::vector<Type> &Xvalues) {
+	std::vector<std::vector<Type>> get_focal_distances(const std::vector<std::vector<double>> &KLdiv_trajectories, const std::vector<double> &convergence_thresholds, const std::vector<std::vector<Type>> &Xvalues) {
 		std::vector<std::vector<size_t>> focal_distance_indexes = get_focal_distance_indexes(KLdiv_trajectories, convergence_thresholds);
 
 		std::vector<std::vector<Type>> focal_distances(KLdiv_trajectories.size(), std::vector<double>(convergence_thresholds.size()));
 		for (size_t i = 0; i < KLdiv_trajectories.size(); ++i) {
 			for (size_t j = 0; j < KLdiv_trajectories[i].size(); ++j) {
-				focal_distances[i][j] = Xvalues[focal_distance_indexes[i][j]];
+				focal_distances[i][j] = Xvalues[i][focal_distance_indexes[i][j]];
 			}
 		}
 		
 		return focal_distances;
 	}
 
-	template<typename Type1, typename Type2, typename Type3=double>
-	std::vector<Type2> get_distortion_coefs(const std::vector<std::vector<Type1>> &focal_distances, const std::vector<Type2> &Xvalues, const Type3 &normalization_coef=1.d) {
-		std::vector<Type2> distortion_coefs = util::math::integrals(focal_distances, Xvalues);
+	template<typename Type1, typename Type2=double>
+	std::vector<Type2> get_distortion_coefs(const std::vector<std::vector<Type1>> &focal_distances, const std::vector<double> &convergence_thresholds, const Type2 &normalization_coef=1.d) {
+		std::vector<Type2> distortion_coefs = util::math::integrals(focal_distances, convergence_thresholds);
 
 		for (Type2 &distortion_coef : distortion_coefs) {
 			distortion_coef /= normalization_coef;
@@ -148,8 +148,8 @@ namespace segregation::multiscalar {
 		return distortion_coefs;
 	}
 
-	template<typename Type>
-	Type get_normalization_factor(const std::vector<std::vector<std::vector<Type>>> &trajectories, const std::vector<double> &convergence_thresholds, const std::vector<Type> &Xvalues={}) {
+	template<typename Type, typename Type2=double>
+	Type get_normalization_factor(const std::vector<std::vector<std::vector<Type>>> &trajectories, const std::vector<double> &convergence_thresholds, const std::vector<std::vector<Type2>> &Xvalues={}) {
 		std::vector<Type> total_distribution(trajectories.size());
 		for (size_t k = 0; k < trajectories.size(); ++k) {
 			total_distribution[k] = trajectories[k][0].back();
