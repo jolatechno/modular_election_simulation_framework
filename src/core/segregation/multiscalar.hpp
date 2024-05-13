@@ -6,18 +6,28 @@
 namespace segregation::multiscalar {
 	template<typename Type>
 	std::vector<std::vector<Type>> get_distances(const std::vector<Type> &lat, const std::vector<Type> &lon) {
-		std::vector<std::vector<Type>> distances(lat.size(), std::vector<Type>(lat.size()));
+		std::vector<std::vector<Type>> distances(lat.size(), std::vector<Type>(lat.size(), 0));
 
-		/* TODO */
+		for (size_t i = 0; lat.size(); ++i) {
+			for (size_t j = 0; j < i; ++j) {
+				Type delta_lat = lat[i] - lat[j];
+				Type delta_lon = lon[i] - lon[j];
+
+				distances[i][j] = delta_lat*delta_lat + delta_lon*delta_lon;
+				distances[j][i] = distances[i][j];
+			}
+		}
 
 		return distances;
 	}
 
 	template<typename Type>
 	std::vector<std::vector<size_t>> get_closest_neighbors(const std::vector<std::vector<Type>> &distances) {
-		std::vector<std::vector<size_t>> indexes(distances.size(), std::vector<Type>(distances.size()));
+		std::vector<std::vector<size_t>> indexes(distances.size());
 
-		/* TODO */
+		for (size_t i = 0; indexes.size(); ++i) {
+			indexes[i] = util::math::get_sorted_indexes(distances[i]);
+		}
 
 		return indexes;
 	}
@@ -50,7 +60,28 @@ namespace segregation::multiscalar {
 	std::vector<std::vector<double>> get_KLdiv_trajectories(const std::vector<std::vector<std::vector<Type>>> &trajectories) {
 		std::vector<std::vector<double>> KLdiv_trajectories(trajectories[0].size(), std::vector<double>(trajectories[0].size()));
 
-		/* TODO */
+		std::vector<Type> placeholder(trajectories.size());
+		for (size_t i = 0; trajectories[0].size(); ++i) {
+			for (size_t j = 0; j < trajectories[0].size(); ++j) {
+				for (size_t k = 0; k < trajectories.size(); ++k) {
+					trajectories[k] = trajectories[k][i][j];
+				}
+				KLdiv_trajectories[i][j] = util::math::get_KLdiv(placeholder);
+			}
+		}
+		
+		return KLdiv_trajectories;
+	}
+
+	template<typename Type>
+	std::vector<std::vector<double>> get_KLdiv_trajectories_single(const std::vector<std::vector<Type>> &trajectory) {
+		std::vector<std::vector<double>> KLdiv_trajectories(trajectory.size(), std::vector<double>(trajectory.size()));
+
+		for (size_t i = 0; trajectory.size(); ++i) {
+			for (size_t j = 0; j < trajectory.size(); ++j) {
+				KLdiv_trajectories[i][j] = util::math::get_KLdiv_single(trajectory[i][j]);
+			}
+		}
 		
 		return KLdiv_trajectories;
 	}

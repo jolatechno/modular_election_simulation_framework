@@ -21,6 +21,31 @@ namespace util::math {
 
 
 	template<typename Type>
+	std::vector<size_t> get_sorted_indexes(const std::vector<Type> &Y) {
+		std::vector<size_t> indexes(Y.size());
+
+		/* TODO */
+
+		return indexes;
+	}
+
+
+	template<typename Type>
+	double get_KLdiv(const std::vector<Type> &Y) {
+		double KLdiv = 0.d;
+
+		/* TODO */
+
+		return KLdiv;
+	}
+
+	template<typename Type>
+	double get_KLdiv_single(const Type &Y) {
+		return get_KLdiv({Y, ((Type)1) - Y});
+	}
+
+
+	template<typename Type>
 	Type integral(const std::vector<Type> &Y, const std::vector<Type> &X) {
 		Type result = 0;
 		for (size_t i = 0; i < Y.size()-1; ++i) {
