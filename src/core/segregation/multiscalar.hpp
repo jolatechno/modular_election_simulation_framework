@@ -125,12 +125,16 @@ namespace segregation::multiscalar {
 
 	template<typename Type>
 	std::vector<std::vector<Type>> get_focal_distances(const std::vector<std::vector<double>> &KLdiv_trajectories, const std::vector<double> &convergence_thresholds, const std::vector<std::vector<Type>> &Xvalues) {
-		std::vector<std::vector<size_t>> focal_distance_indexes = get_focal_distance_indexes(KLdiv_trajectories, convergence_thresholds);
+		std::vector<std::vector<Type>> focal_distances(KLdiv_trajectories.size(), std::vector<Type>(convergence_thresholds.size()));
 
-		std::vector<std::vector<Type>> focal_distances(KLdiv_trajectories.size(), std::vector<double>(convergence_thresholds.size()));
 		for (size_t i = 0; i < KLdiv_trajectories.size(); ++i) {
-			for (size_t j = 0; j < KLdiv_trajectories[i].size(); ++j) {
-				focal_distances[i][j] = Xvalues[i][focal_distance_indexes[i][j]];
+			size_t idx = KLdiv_trajectories[0].size()-1;
+			for (size_t j = 0; j < convergence_thresholds.size(); ++j) {
+				while (idx > 0 && KLdiv_trajectories[i][idx] < convergence_thresholds[j]) {
+					--idx;
+				}
+
+				focal_distances[i][j] = Xvalues[i][idx];
 			}
 		}
 		
@@ -149,31 +153,37 @@ namespace segregation::multiscalar {
 	}
 
 	template<typename Type, typename Type2=double>
-	Type get_normalization_factor(const std::vector<std::vector<std::vector<Type>>> &trajectories, const std::vector<double> &convergence_thresholds, const std::vector<std::vector<Type2>> &Xvalues={}) {
-		std::vector<Type> total_distribution(trajectories.size());
-		for (size_t k = 0; k < trajectories.size(); ++k) {
-			total_distribution[k] = trajectories[k][0].back();
+	Type get_normalization_factor(const std::vector<std::vector<Type>> &vects, const std::vector<double> &convergence_thresholds, const std::vector<std::vector<Type2>> &Xvalues={}) {
+		std::vector<Type> total_distribution(vects.size());
+
+		Type total = 0;
+		for (size_t k = 0; k < vects.size(); ++k) {
+			total_distribution[k] = std::accumulate(vects[k].begin(), vects[k].end(), 0);
+			total                += total_distribution[k];
+		}
+		for (size_t k = 0; k < vects.size(); ++k) {
+			total_distribution[k] /= total;
 		}
 		std::sort(total_distribution.begin(), total_distribution.end());
 
 
-		std::vector<std::vector<size_t>> indexes(1, std::vector<size_t>(trajectories[0].size()));
+		std::vector<std::vector<size_t>> indexes(1, std::vector<size_t>(vects[0].size()));
 		std::iota(indexes[0].begin(), indexes[0].end(), 0);
 
 
-		std::vector<std::vector<Type>> vects(trajectories.size(), std::vector<Type>(trajectories[0].size(), 0));
+		std::vector<std::vector<Type>> vects_(vects.size(), std::vector<Type>(vects[0].size(), 0));
 
 
 		size_t limit_idx = 0;
-		for (size_t i = 0; i < trajectories.size(); ++i) {
+		for (size_t i = 0; i < vects.size(); ++i) {
 			size_t previous_limit_idx = limit_idx;
-			limit_idx = std::min(trajectories[0].size(), (size_t)(limit_idx + total_distribution[i]*trajectories[0].size()));
+			limit_idx = std::min(vects[0].size(), (size_t)(limit_idx + total_distribution[i]*vects[0].size()));
 			for (size_t j = previous_limit_idx; j < limit_idx; ++j) {
-				vects[i][j] = 1;
+				vects_[i][j] = 1;
 			}
 		}
 
-		auto trajectories_ = segregation::multiscalar::get_trajectories(vects, indexes);
+		auto trajectories_ = segregation::multiscalar::get_trajectories(vects_, indexes);
 		auto KLdiv_trajectories = segregation::multiscalar::get_KLdiv_trajectories(trajectories_);
 
 		if (Xvalues.empty()) {
@@ -182,8 +192,54 @@ namespace segregation::multiscalar {
 			return distortion_coefs[0];
 		} else {
 			auto focal_distances = segregation::multiscalar::get_focal_distances(KLdiv_trajectories, convergence_thresholds, Xvalues);
-			auto distortion_coefs = segregation::multiscalar::get_distortion_coefs(focal_distances, convergence_thresholds);
-			return distortion_coefs[0];
+
+			Type max_normalization_factor = 0;
+			for (int i = 0; i < vects[0].size(); ++i) {
+				std::vector<std::vector<Type2>> Xvalues_slice(Xvalues.begin()+i, Xvalues.begin()+i+1);
+
+				auto focal_distances_slice = segregation::multiscalar::get_focal_distances(KLdiv_trajectories, convergence_thresholds, Xvalues_slice);
+				auto distortion_coefs      = segregation::multiscalar::get_distortion_coefs(focal_distances_slice, convergence_thresholds);
+
+				max_normalization_factor = std::max(max_normalization_factor, distortion_coefs[0]);
+			}
+
+			std::cout << max_normalization_factor << "\n";
+
+			return max_normalization_factor;
 		}
+	}
+
+	template<typename Type1, typename Type2=double>
+	std::vector<Type1> get_normalized_distortion_coefs_fast(
+		const std::vector<std::vector<Type1>> &vects, const std::vector<std::vector<size_t>> &indexes,
+		const std::vector<double> &convergence_thresholds, const std::vector<std::vector<Type2>> &Xvalues={})
+	{
+		std::vector<Type1> distortion_coefs(vects[0].size());
+
+		for (size_t i = 0; i < vects[0].size(); ++i) {
+			std::vector<std::vector<size_t>> indexes_slice(indexes.begin()+i, indexes.begin()+i+1);
+
+			auto this_trajectories_      = segregation::multiscalar::get_trajectories(vects, indexes_slice);
+			auto this_KLdiv_trajectories = segregation::multiscalar::get_KLdiv_trajectories(this_trajectories_);
+
+			if (Xvalues.empty()) {
+				auto this_focal_distance_indexes = segregation::multiscalar::get_focal_distance_indexes(this_KLdiv_trajectories, convergence_thresholds);
+				auto this_distortion_coefs       = segregation::multiscalar::get_distortion_coefs(this_focal_distance_indexes, convergence_thresholds);
+				distortion_coefs[i]              = this_distortion_coefs[0];
+			} else {
+				std::vector<std::vector<Type2>> Xvalues_slice(Xvalues.begin()+i, Xvalues.begin()+i+1);
+
+				auto this_focal_distances  = segregation::multiscalar::get_focal_distances(this_KLdiv_trajectories, convergence_thresholds, Xvalues_slice);
+				auto this_distortion_coefs = segregation::multiscalar::get_distortion_coefs(this_focal_distances, convergence_thresholds);
+				distortion_coefs[i]        = this_distortion_coefs[0];
+			}
+		}
+
+		double normalization_coef = get_normalization_factor(vects, convergence_thresholds, Xvalues);
+		for (Type1 &distortion_coef : distortion_coefs) {
+			distortion_coef /= normalization_coef;
+		}
+		
+		return distortion_coefs;
 	}
 }

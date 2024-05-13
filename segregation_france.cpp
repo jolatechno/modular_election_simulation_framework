@@ -22,11 +22,14 @@ const std::vector<std::string> candidates_from_left_to_right = {
 };
 const int N_candidates = 12;
 
+const int N_full_analyze = 800;
+
 const char* input_file_name  = "output/preprocessed.h5";
 const char* output_file_name = "output/segregation_output.h5";
 
 
 int main() {
+	H5::H5File output_file(output_file_name, H5F_ACC_TRUNC);
 	H5::H5File input_file( input_file_name,  H5F_ACC_RDWR);
 
 
@@ -36,18 +39,19 @@ int main() {
 	util::hdf5io::H5ReadVector(geo_data, lon, "lon");
 
 
+	std::cout << "Computing distances...\n";
 	auto distances = segregation::multiscalar::get_distances(lat, lon);
-	std::cout << "distances: " << distances[0] << "\n";
 
+	std::cout << "Computing KNN...\n";
 	auto traj_idxes = segregation::multiscalar::get_closest_neighbors(distances);
-	std::cout << "\nindexes: "   << traj_idxes[0] << "\n";
 
-	std::vector<double> sorted_distances(50);
-	for (int i = 0; i < sorted_distances.size(); ++i) {
-		sorted_distances[i] = distances[0][traj_idxes[0][i]];
-	}
-	std::cout << "\nsorted_distances: "   << sorted_distances << "\n";
 
+	H5::Group out_geo_data = output_file.createGroup("geo_data");
+	util::hdf5io::H5WriteIrregular2DVector(out_geo_data, distances, "distances");
+	util::hdf5io::H5WriteIrregular2DVector(out_geo_data, distances, "knn");
+
+
+	std::cout << "Reading voter data...\n";
 
 	std::vector<double> populations;
 	H5::Group demo_data = input_file.openGroup("demo_data");
@@ -56,29 +60,51 @@ int main() {
 	std::vector<std::vector<double>> votes(N_candidates);
 	H5::Group vote_data = input_file.openGroup("vote_data");
 	for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
-		std::string field_name = "PROP_Voix_" + candidates_from_left_to_right[icandidate];
+		std::string field_name = "Voix_" + candidates_from_left_to_right[icandidate];
 		util::hdf5io::H5ReadVector(vote_data, votes[icandidate], field_name.c_str());
 	}
 
 
-	auto convergence_thresholds = util::math::logspace<double>(1e-6d, 9.d, 200);
-
-	auto vote_trajectories = segregation::multiscalar::get_trajectories(votes, traj_idxes);
-	std::cout << "\nvote trajectory \"" << candidates_from_left_to_right[7] << "\": " << vote_trajectories[7][0] << "\n";
-
-	auto KLdiv_trajectories = segregation::multiscalar::get_KLdiv_trajectories(vote_trajectories);
-	std::cout << "\nKLdiv trajectory: " << KLdiv_trajectories[0] << "\n";
-
-	auto focal_distance_indexes = segregation::multiscalar::get_focal_distance_indexes(KLdiv_trajectories, convergence_thresholds);
-	std::cout << "\nfocal distance indexes: " << focal_distance_indexes[0] << "\n";
+	auto convergence_thresholds = util::math::logspace<double>(1e-7d, 9.d, 400);
 
 
-	auto normalization_factor = segregation::multiscalar::get_normalization_factor(vote_trajectories, convergence_thresholds);
-	std::cout << "\nnormalization factor: " << normalization_factor << "\n";
+	{
+		std::vector<size_t> full_analyze_idxs(lat.size());
+		std::iota(full_analyze_idxs.begin(), full_analyze_idxs.end(), 0);
+		std::shuffle(full_analyze_idxs.begin(), full_analyze_idxs.end(), util::get_random_generator());
+		full_analyze_idxs.resize(N_full_analyze);
+		std::sort(full_analyze_idxs.begin(), full_analyze_idxs.end());
 
-	auto distortion_coefs = segregation::multiscalar::get_distortion_coefs(focal_distance_indexes, convergence_thresholds);
-	std::cout << "distortion coefs: " << distortion_coefs << "\n";
+		std::vector<std::vector<size_t>> traj_idxes_slice(N_full_analyze);
+		for (size_t i = 0; i < N_full_analyze; ++i) {
+			traj_idxes_slice[i] = traj_idxes[full_analyze_idxs[i]];
+		}
 
-	auto normalized_distortion_coefs = segregation::multiscalar::get_distortion_coefs(focal_distance_indexes, convergence_thresholds, normalization_factor);
-	std::cout << "normalized distortion coefs: " << normalized_distortion_coefs << " < " << *std::max_element(normalized_distortion_coefs.begin(), normalized_distortion_coefs.end()) << "\n";
+		H5::Group partial_analysis = output_file.createGroup("partial_analysis");
+		util::hdf5io::H5WriteVector(           partial_analysis, full_analyze_idxs, "full_analyze_idxs");
+		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, traj_idxes_slice,  "knn");
+
+
+		std::cout << "Computing partial analysis...\n";
+
+
+		auto vote_trajectories     = segregation::multiscalar::get_trajectories(votes, traj_idxes_slice);
+		auto KLdiv_trajectories    = segregation::multiscalar::get_KLdiv_trajectories(vote_trajectories);
+		auto focal_distances_idxes = segregation::multiscalar::get_focal_distance_indexes(KLdiv_trajectories, convergence_thresholds);
+
+		for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
+			std::string field_name = "vote_trajectory_" + candidates_from_left_to_right[icandidate];
+			util::hdf5io::H5WriteIrregular2DVector(partial_analysis, vote_trajectories[icandidate], field_name.c_str());
+		}
+		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, KLdiv_trajectories,    "KLdiv_trajectories");
+		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, focal_distances_idxes, "focal_distances_idxes");
+	}
+
+	std::cout << "Computing full analysis...\n";
+
+	auto normalized_distortion_coefs = segregation::multiscalar::get_normalized_distortion_coefs_fast(votes, traj_idxes, convergence_thresholds, distances);
+	std::cout << "\nnormalized distortion coefs: " << normalized_distortion_coefs << "  <<  (" << *std::max_element(normalized_distortion_coefs.begin(), normalized_distortion_coefs.end()) << ")\n";
+
+	H5::Group full_analysis = output_file.createGroup("full_analysis");
+	util::hdf5io::H5WriteVector(full_analysis, normalized_distortion_coefs, "normalized_distortion_coefs");
 }
