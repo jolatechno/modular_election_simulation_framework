@@ -31,7 +31,7 @@ namespace util::math {
 
 
 	template<typename Type>
-	double get_KLdiv(const std::vector<Type> &Y) {
+	double get_KLdiv(const std::vector<Type> &P, const std::vector<Type> &Q) {
 		double KLdiv = 0.d;
 
 		/* TODO */
@@ -40,8 +40,8 @@ namespace util::math {
 	}
 
 	template<typename Type>
-	double get_KLdiv_single(const Type &Y) {
-		return get_KLdiv({Y, ((Type)1) - Y});
+	double get_KLdiv_single(const Type &P, const Type &Q) {
+		return get_KLdiv({P, 1-P}, {Q, 1-Q});
 	}
 
 

@@ -73,13 +73,18 @@ namespace segregation::multiscalar {
 	std::vector<std::vector<double>> get_KLdiv_trajectories(const std::vector<std::vector<std::vector<Type>>> &trajectories) {
 		std::vector<std::vector<double>> KLdiv_trajectories(trajectories[0].size(), std::vector<double>(trajectories[0].size()));
 
+		std::vector<Type> total_distribution(trajectories.size());
+		for (size_t k = 0; k < trajectories.size(); ++k) {
+			total_distribution[k] = trajectories[k][0].back();
+		}
+
 		std::vector<Type> placeholder(trajectories.size());
 		for (size_t i = 0; trajectories[0].size(); ++i) {
 			for (size_t j = 0; j < trajectories[0].size(); ++j) {
 				for (size_t k = 0; k < trajectories.size(); ++k) {
 					trajectories[k] = trajectories[k][i][j];
 				}
-				KLdiv_trajectories[i][j] = util::math::get_KLdiv(placeholder);
+				KLdiv_trajectories[i][j] = util::math::get_KLdiv(placeholder, total_distribution);
 			}
 		}
 		
@@ -90,9 +95,10 @@ namespace segregation::multiscalar {
 	std::vector<std::vector<double>> get_KLdiv_trajectories_single(const std::vector<std::vector<Type>> &trajectory) {
 		std::vector<std::vector<double>> KLdiv_trajectories(trajectory.size(), std::vector<double>(trajectory.size()));
 
+		double total_distribution = trajectory[0].back();
 		for (size_t i = 0; trajectory.size(); ++i) {
 			for (size_t j = 0; j < trajectory.size(); ++j) {
-				KLdiv_trajectories[i][j] = util::math::get_KLdiv_single(trajectory[i][j]);
+				KLdiv_trajectories[i][j] = util::math::get_KLdiv_single(trajectory[i][j], total_distribution);
 			}
 		}
 		
