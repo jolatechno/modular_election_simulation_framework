@@ -19,7 +19,7 @@ public:
 	void randomize(float p=0.5) {
 		std::uniform_real_distribution<float> distribution(0.0, 1.0);
 		
-		candidate = distribution(get_random_generator()) < p;
+		candidate = distribution(util::get_random_generator()) < p;
 	}
 
 	std::vector<const voter*> list_of_possible_agents() {
@@ -76,7 +76,7 @@ class voter_interaction_function : public AgentInteractionFunctionTemplate<voter
 public:
 	void operator()(voter &agent, std::vector<const voter*> neighbors) const {
 		std::uniform_int_distribution<int> distribution(0, neighbors.size()-1);
-		int neighbor_idx = distribution(get_random_generator());
+		int neighbor_idx = distribution(util::get_random_generator());
 
 		agent.candidate = neighbors[neighbor_idx]->candidate;
 	}

@@ -13,7 +13,7 @@ void preferential_attachment(SocialNetworkTemplate<Agent> *network, int n_attach
 	size_t total_degree = std::accumulate(degrees.begin(), degrees.end(), 0);
 
 	auto nodes = network->nodes();
-	std::shuffle(nodes.begin(), nodes.end(), get_random_generator());
+	std::shuffle(nodes.begin(), nodes.end(), util::get_random_generator());
 
 	if (total_degree == 0) {
 		size_t i = nodes[network->num_nodes()-2];
@@ -33,7 +33,7 @@ void preferential_attachment(SocialNetworkTemplate<Agent> *network, int n_attach
 			degrees[node] = 0;
 
 			std::uniform_int_distribution<size_t> distribution(0, total_degree-1);
-			size_t rdm = distribution(get_random_generator());
+			size_t rdm = distribution(util::get_random_generator());
 
 			for (size_t j = 0;; ++j) {
 				if (rdm <= degrees[nodes[j]]) {

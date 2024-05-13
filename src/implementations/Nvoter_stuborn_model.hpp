@@ -25,7 +25,7 @@ public:
 	template<typename ...Args>
 	void randomize(float p_stuborn=0, Args... args) {
 		std::uniform_real_distribution<float> distribution(0.0, 1.0);
-		stuborn = distribution(get_random_generator()) < p_stuborn;
+		stuborn = distribution(util::get_random_generator()) < p_stuborn;
 
 		Nvoter<N_candidates>::randomize(args...);
 	}
@@ -50,7 +50,7 @@ public:
 	void operator()(Nvoter_stuborn<N_candidates> &agent, std::vector<const Nvoter_stuborn<N_candidates>*> neighbors) const {
 		if (!agent.stuborn) {
 			std::uniform_int_distribution<int> distribution(0, neighbors.size()-1);
-			int neighbor_idx = distribution(get_random_generator());
+			int neighbor_idx = distribution(util::get_random_generator());
 
 			agent.candidate = neighbors[neighbor_idx]->candidate;
 		}

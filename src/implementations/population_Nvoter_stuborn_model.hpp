@@ -16,7 +16,7 @@ public:
 	void randomize(const std::vector<double> &mean_equilibirum, const std::vector<double> &equilibrium_var, Args ...args) {
 		for (int i = 0; i < N_candidates; ++i) {
 			std::normal_distribution<double> distribution(mean_equilibirum[i], equilibrium_var[i]);
-			stuborn_equilibrium[i] = std::max(0.d, distribution(get_random_generator()));
+			stuborn_equilibrium[i] = std::max(0.d, distribution(util::get_random_generator()));
 		}
 
 		AgentPopulation<Nvoter_stuborn<N_candidates>>::randomize(args...);
@@ -25,7 +25,7 @@ public:
 	void randomize(const std::vector<double> &mean_equilibirum, Args ...args) {
 		for (int i = 0; i < N_candidates; ++i) {
 			std::normal_distribution<double> distribution(mean_equilibirum[i], mean_equilibirum[i]/2);
-			stuborn_equilibrium[i] = std::max(0.d, distribution(get_random_generator()));
+			stuborn_equilibrium[i] = std::max(0.d, distribution(util::get_random_generator()));
 		}
 
 		AgentPopulation<Nvoter_stuborn<N_candidates>>::randomize(args...);

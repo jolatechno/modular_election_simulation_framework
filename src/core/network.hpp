@@ -106,7 +106,7 @@ public:
 		static_assert(std::is_convertible<Agent, Agent2>::value, "Error: Agent class is not compatible with the one used by AgentInteractionFunctionTemplate in interact !");
 
 		std::vector<size_t> node_lists = nodes();
-		std::shuffle(node_lists.begin(), node_lists.end(), get_random_generator());
+		std::shuffle(node_lists.begin(), node_lists.end(), util::get_random_generator());
 
 		for (size_t node : node_lists) {
 			(*interactionfunc)((Agent2&)(*this)[node], get_neighbors<Agent2>(node));

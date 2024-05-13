@@ -20,8 +20,8 @@ public:
 	void randomize(float p=0.5, float p_stuborn=0) {
 		std::uniform_real_distribution<float> distribution(0.0, 1.0);
 		
-		candidate = distribution(get_random_generator()) < p;
-		stuborn   = distribution(get_random_generator()) < p_stuborn;
+		candidate = distribution(util::get_random_generator()) < p;
+		stuborn   = distribution(util::get_random_generator()) < p_stuborn;
 	}
 
 	std::vector<const voter_stuborn*> list_of_possible_agents() {
@@ -39,7 +39,7 @@ public:
 	void operator()(voter_stuborn &agent, std::vector<const voter_stuborn*> neighbors) const {
 		if (!agent.stuborn) {
 			std::uniform_int_distribution<int> distribution(0, neighbors.size()-1);
-			int neighbor_idx = distribution(get_random_generator());
+			int neighbor_idx = distribution(util::get_random_generator());
 
 			agent.candidate = neighbors[neighbor_idx]->candidate;
 		}

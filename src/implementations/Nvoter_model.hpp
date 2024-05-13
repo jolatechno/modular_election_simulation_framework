@@ -22,7 +22,7 @@ public:
 		double normalization_factor = std::accumulate(probas.begin(), probas.end(), 0.d);
 
 		std::uniform_real_distribution<double> distribution(0.d, normalization_factor);
-		double rng_value = distribution(get_random_generator());
+		double rng_value = distribution(util::get_random_generator());
 
 		candidate = -1;
 		while (rng_value > 0 && candidate <= N_candidates) {
@@ -98,7 +98,7 @@ class Nvoter_interaction_function : public AgentInteractionFunctionTemplate<Nvot
 public:
 	void operator()(Nvoter<N_candidates> &agent, std::vector<const Nvoter<N_candidates>*> neighbors) const {
 		std::uniform_int_distribution<int> distribution(0, neighbors.size()-1);
-		int neighbor_idx = distribution(get_random_generator());
+		int neighbor_idx = distribution(util::get_random_generator());
 
 		agent.candidate = neighbors[neighbor_idx]->candidate;
 	}

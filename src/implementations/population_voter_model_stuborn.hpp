@@ -14,8 +14,8 @@ public:
 	template<typename ...Args>
 	void randomize(double mean_stuborn_equilibrium0, double mean_stuborn_equilibrium1, Args ...args) {
 		std::normal_distribution<double> distribution(1.0, 0.5);
-		stuborn_equilibrium[0] = std::max(0.d, distribution(get_random_generator())*mean_stuborn_equilibrium0);
-		stuborn_equilibrium[1] = std::max(0.d, distribution(get_random_generator())*mean_stuborn_equilibrium1);
+		stuborn_equilibrium[0] = std::max(0.d, distribution(util::get_random_generator())*mean_stuborn_equilibrium0);
+		stuborn_equilibrium[1] = std::max(0.d, distribution(util::get_random_generator())*mean_stuborn_equilibrium1);
 
 		AgentPopulation<voter_stuborn>::randomize(args...);
 	}

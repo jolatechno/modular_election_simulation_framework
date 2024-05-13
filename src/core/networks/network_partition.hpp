@@ -5,7 +5,7 @@ std::vector<std::vector<size_t>> random_graphAgnostic_partition_graph(SocialNetw
 	std::vector<std::vector<size_t>> partition;
 
 	std::vector<size_t> nodes = network->nodes();
-	std::shuffle(nodes.begin(), nodes.end(), get_random_generator());
+	std::shuffle(nodes.begin(), nodes.end(), util::get_random_generator());
 
 	for (size_t i = 0; i < n_partition; ++i) {
 		size_t idx_begin = (network->num_nodes()* i  ) /n_partition;

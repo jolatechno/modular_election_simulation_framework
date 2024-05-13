@@ -19,7 +19,7 @@ public:
 	void randomize(const std::vector<double> &mean_proportions, const std::vector<double> &proportions_var) {
 		for (int i = 0; i < agent_types.size(); ++i) {
 			std::normal_distribution<double> distribution(mean_proportions[i], proportions_var[i]);
-			proportions[i] = std::max(1e-9d, distribution(get_random_generator()));
+			proportions[i] = std::max(1e-9d, distribution(util::get_random_generator()));
 		}
 
 		renormalize();
@@ -38,7 +38,7 @@ public:
 	template<typename... Args>
 	void randomize(size_t pop_mean, size_t pop_var, Args ...args) {
 		std::normal_distribution<double> distribution(pop_mean, pop_var);
-		population = std::max((long)0, (long)distribution(get_random_generator()));
+		population = std::max((long)0, (long)distribution(util::get_random_generator()));
 
 		randomize(args...);
 	}
@@ -124,7 +124,7 @@ public:
 					proportions[ifield]/normalization_factor));
 
 				std::binomial_distribution<long int> distribution(to_select, select_proportion);
-				long int this_selected = distribution(get_random_generator());
+				long int this_selected = distribution(util::get_random_generator());
 				selected[ifield]       = (double)this_selected;
 
 				to_select            -= this_selected;

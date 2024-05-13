@@ -426,6 +426,4 @@ int main() {
 			test->update_agentwise(renormalize);
 		}
 	}
-
-	return 0;
 }
