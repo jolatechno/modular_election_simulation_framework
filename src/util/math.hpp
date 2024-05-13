@@ -7,14 +7,28 @@
 
 
 namespace util::math {
-	template<typename Type, typename limitType>
-	std::vector<Type> linspace(const limitType &min, const limitType &max, const size_t N) {
+	template<typename Type, typename limitType1, typename limitType2>
+	std::vector<Type> linspace(const limitType1 &min, const limitType2 &max, const size_t N) {
 		std::vector<Type> vect(N);
 
 		const Type Tmin  = (Type)min;
 		const Type delta = ((Type)max - Tmin)/N;
 		for (size_t i = 0; i < N; ++i) {
 			vect[i] = Tmin + delta*i;
+		}
+
+		return vect;
+	}
+
+	template<typename Type, typename limitType1, typename limitType2>
+	std::vector<Type> logspace(const limitType1 &min, const limitType2 &max, const size_t N) {
+		std::vector<Type> vect(N);
+
+		const Type log_min  = std::log((Type)min);
+		const Type log_max  = std::log((Type)max);
+		const Type delta = (log_max - log_min)/N;
+		for (size_t i = 0; i < N; ++i) {
+			vect[i] = std::exp(log_min + delta*i);
 		}
 
 		return vect;

@@ -61,7 +61,7 @@ int main() {
 	}
 
 
-	auto convergence_thresholds = util::math::linspace<double>(0.d, 9.d, 400);
+	auto convergence_thresholds = util::math::logspace<double>(1e-6d, 9.d, 200);
 
 	auto vote_trajectories = segregation::multiscalar::get_trajectories(votes, traj_idxes);
 	std::cout << "\nvote trajectory \"" << candidates_from_left_to_right[7] << "\": " << vote_trajectories[7][0] << "\n";
