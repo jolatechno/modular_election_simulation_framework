@@ -55,10 +55,11 @@ const char* output_file_name = "output/output_2.h5";
 
 template<class Type>
 double get_median(std::vector<Type> vec) {
-	std::sort(vec.begin(), vec.end()); 
+	std::vector<Type> vec_copy(vec.begin(), vec.end());
+	std::sort(vec_copy.begin(), vec_copy.end()); 
 
-	size_t median_element = vec.size()/2;
-	return vec[median_element];
+	size_t median_element = vec_copy.size()/2;
+	return vec_copy[median_element];
 } 
 
 int main() {
@@ -88,7 +89,7 @@ int main() {
 
 	std::vector<float> lat;
 	H5::Group geo_data = input_file.openGroup("geo_data");
-	H5ReadVector(geo_data, lat, "lat");
+	util::hdf5io::H5ReadVector(geo_data, lat, "lat");
 
 	std::vector<std::vector<size_t>> counties = {{}, {}};
 	float median = get_median(lat);
@@ -102,14 +103,14 @@ int main() {
 
 	std::vector<double> populations;
 	H5::Group demo_data = input_file.openGroup("demo_data");
-	H5ReadVector(demo_data, populations,  "voter_population");
+	util::hdf5io::H5ReadVector(demo_data, populations,  "voter_population");
 
 
 	std::vector<std::vector<double>> votes(N_candidates);
 	H5::Group vote_data = input_file.openGroup("vote_data");
 	for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
 		std::string field_name = "PROP_Voix_" + candidates_from_left_to_right[icandidate];
-		H5ReadVector(vote_data, votes[icandidate], field_name.c_str());
+		util::hdf5io::H5ReadVector(vote_data, votes[icandidate], field_name.c_str());
 	}
 
 	for (size_t node = 0; node < N_nodes; ++node) {

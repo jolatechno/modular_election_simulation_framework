@@ -16,14 +16,14 @@ void write_network_to_file(const SocialNetworkTemplate<Agent> *network, H5::H5Fi
 	for (size_t node = 0; node < network->num_nodes(); ++node) {
 		neighbors.push_back(network->neighbors(node));
 	}
-	H5WriteIrregular2DVector(group, neighbors, "neighbors");
+	util::hdf5io::H5WriteIrregular2DVector(group, neighbors, "neighbors");
 }
 template<class Agent>
 auto read_network_from_file(SocialNetworkTemplate<Agent> *network, H5::H5File &file, const char* group_name="/network") {
 	H5::Group group = file.openGroup(group_name);
 
 	std::vector<std::vector<size_t>> neighbors(0, std::vector<size_t>(0));
-	H5ReadIrregular2DVector(group, neighbors, "neighbors");
+	util::hdf5io::H5ReadIrregular2DVector(group, neighbors, "neighbors");
 
 	network->resize(neighbors.size());
 	network->clear_connections();
@@ -110,25 +110,25 @@ void write_agent_states_to_file(const SocialNetworkTemplate<Agent> *network, con
 	for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
 		switch (list_of_fields[ifield].second) {
 		case 0:
-			H5WriteVector<char>(        group, std::get<0>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteVector<char>(        group, std::get<0>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 1:
-			H5WriteVector<int>(         group, std::get<1>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteVector<int>(         group, std::get<1>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 2:
-			H5WriteVector<unsigned int>(group, std::get<2>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteVector<unsigned int>(group, std::get<2>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 3:
-			H5WriteVector<long>(        group, std::get<3>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteVector<long>(        group, std::get<3>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 4:
-			H5WriteVector<size_t>(      group, std::get<4>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteVector<size_t>(      group, std::get<4>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 5:
-			H5WriteVector<float>(       group, std::get<5>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteVector<float>(       group, std::get<5>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 6:
-			H5WriteVector<double>(      group, std::get<6>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteVector<double>(      group, std::get<6>(write_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		}
 	}
@@ -152,31 +152,31 @@ void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const Ag
 		switch (list_of_fields[ifield].second) {
 		case 0:
 			read_vectors[ifield] = std::vector<char>();
-			H5ReadVector<char>(        group, std::get<0>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5ReadVector<char>(        group, std::get<0>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 1:
 			read_vectors[ifield] = std::vector<int>();
-			H5ReadVector<int>(         group, std::get<1>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5ReadVector<int>(         group, std::get<1>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 2:
 			read_vectors[ifield] = std::vector<unsigned int>();
-			H5ReadVector<unsigned int>(group, std::get<2>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5ReadVector<unsigned int>(group, std::get<2>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 3:
 			read_vectors[ifield] = std::vector<long>();
-			H5ReadVector<long>(        group, std::get<3>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5ReadVector<long>(        group, std::get<3>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 4:
 			read_vectors[ifield] = std::vector<size_t>();
-			H5ReadVector<size_t>(      group, std::get<4>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5ReadVector<size_t>(      group, std::get<4>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 5:
 			read_vectors[ifield] = std::vector<float>();
-			H5ReadVector<float>(       group, std::get<5>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5ReadVector<float>(       group, std::get<5>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 6:
 			read_vectors[ifield] = std::vector<double>();
-			H5ReadVector<double>(      group, std::get<6>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5ReadVector<double>(      group, std::get<6>(read_vectors[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		}
 	}
@@ -216,13 +216,13 @@ void read_agent_states_from_file(SocialNetworkTemplate<Agent> *network, const Ag
 
 void write_counties_to_file(const std::vector<std::vector<size_t>> &counties, H5::H5File &file, const char* group_name="/counties") {
 	H5::Group group = file.createGroup(group_name);
-	H5WriteIrregular2DVector(group, counties, "counties");
+	util::hdf5io::H5WriteIrregular2DVector(group, counties, "counties");
 }
 void read_counties_from_file(std::vector<std::vector<size_t>> &counties, H5::H5File &file, const char* group_name="/counties") {
 	counties.clear();
 
 	H5::Group group = file.openGroup(group_name);
-	H5ReadIrregular2DVector(group, counties, "counties");
+	util::hdf5io::H5ReadIrregular2DVector(group, counties, "counties");
 }
 
 
@@ -237,25 +237,25 @@ void write_election_result_to_file(const ElectionResultTemplate *result, const E
 	for (size_t ifield = 0; ifield < list_of_fields.size(); ++ifield) {
 		switch (list_of_fields[ifield].second) {
 		case 0:
-			H5WriteSingle<char>(        group, (char)std::get<0>(values[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteSingle<char>(        group, (char)std::get<0>(values[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 1:
-			H5WriteSingle<int>(         group, std::get<1>(values[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteSingle<int>(         group, std::get<1>(values[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 2:
-			H5WriteSingle<unsigned int>(group, std::get<2>(values[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteSingle<unsigned int>(group, std::get<2>(values[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 3:
-			H5WriteSingle<long>(        group, std::get<3>(values[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteSingle<long>(        group, std::get<3>(values[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 4:
-			H5WriteSingle<size_t>(      group, std::get<4>(values[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteSingle<size_t>(      group, std::get<4>(values[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 5:
-			H5WriteSingle<float>(       group, std::get<5>(values[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteSingle<float>(       group, std::get<5>(values[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		case 6:
-			H5WriteSingle<double>(      group, std::get<6>(values[ifield]), list_of_fields[ifield].first.c_str());
+			util::hdf5io::H5WriteSingle<double>(      group, std::get<6>(values[ifield]), list_of_fields[ifield].first.c_str());
 			break;
 		}
 	}

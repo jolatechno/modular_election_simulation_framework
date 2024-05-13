@@ -52,7 +52,7 @@ namespace util {
 		}();
 	}
 
-	std::mt19937& get_random_generator() {
+	inline std::mt19937& get_random_generator() {
 	#if defined(_OPENMP)
 		return random_generators[omp_get_thread_num()];
 	#else
