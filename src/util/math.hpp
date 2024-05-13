@@ -72,7 +72,7 @@ namespace util::math {
 	std::vector<Type> integrals(const Matrix &Y, const std::vector<Type> &X) {
 		std::vector<Type> results(Y.size(), 0);
 		for (size_t i = 0; i < Y.size(); ++i) {
-			for (size_t j = 0; i < X.size()-1; ++i) {
+			for (size_t j = 0; j < X.size()-1; ++j) {
 				results[i] += (Y[i][j+1] + Y[i][j])/2*(X[j+1] - X[j]);
 			}
 		}
@@ -83,7 +83,7 @@ namespace util::math {
 	std::vector<Type> integrals(const Matrix &Y, const Type &dX) {
 		std::vector<Type> results(Y.size(), 0);
 		for (size_t i = 0; i < Y.size(); ++i) {
-			for (size_t j = 0; i < Y[i].size(); ++i) {
+			for (size_t j = 0; j < Y[i].size(); ++j) {
 				results[i] += Y[i][j];
 			}
 			results[i] *= dX;
