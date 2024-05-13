@@ -26,7 +26,11 @@ namespace segregation::multiscalar {
 	std::vector<std::vector<Type>> get_trajectories(const std::vector<Type> &vect, const std::vector<std::vector<size_t>> &indexes) {
 		std::vector<std::vector<Type>> trajectory(indexes.size(), std::vector<Type>(indexes.size()));
 
-		/* TODO */
+		for (size_t i = 0; indexes.size(); ++i) {
+			for (size_t j = 0; j < indexes[i].size(); ++j) {
+				trajectory[i][j] = vect[indexes[i][j]];
+			}
+		}
 
 		return trajectory;
 	}
@@ -75,9 +79,11 @@ namespace segregation::multiscalar {
 
 	template<typename Type>
 	std::vector<Type> get_distortion_coefs(const std::vector<std::vector<Type>> &focal_distances, const std::vector<Type> &Xvalues, const Type &normalization_coef=1.0) {
-		std::vector<Type> distortion_coefs(focal_distances.size());
+		std::vector<Type> distortion_coefs = integrals(focal_distances, Xvalues);
 
-		/* TODO */
+		for (Type &distortion_coef : distortion_coefs) {
+			distortion_coef *= normalization_coef;
+		}
 		
 		return distortion_coefs;
 	}
