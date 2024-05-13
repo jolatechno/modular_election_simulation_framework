@@ -61,7 +61,7 @@ int main() {
 	}
 
 
-	auto convergence_coefficients = util::math::linspace<double>(0.d, 0.05d, 10);
+	auto convergence_thresholds = util::math::linspace<double>(0.d, 9.d, 400);
 
 	auto vote_trajectories = segregation::multiscalar::get_trajectories(votes, traj_idxes);
 	std::cout << "\nvote trajectory \"" << candidates_from_left_to_right[7] << "\": " << vote_trajectories[7][0] << "\n";
@@ -69,11 +69,16 @@ int main() {
 	auto KLdiv_trajectories = segregation::multiscalar::get_KLdiv_trajectories(vote_trajectories);
 	std::cout << "\nKLdiv trajectory: " << KLdiv_trajectories[0] << "\n";
 
-	auto focal_distance_indexes = segregation::multiscalar::get_focal_distance_indexes(KLdiv_trajectories, convergence_coefficients);
+	auto focal_distance_indexes = segregation::multiscalar::get_focal_distance_indexes(KLdiv_trajectories, convergence_thresholds);
 	std::cout << "\nfocal distance indexes: " << focal_distance_indexes[0] << "\n";
 
 
+	auto normalization_factor = segregation::multiscalar::get_normalization_factor(vote_trajectories, convergence_thresholds);
+	std::cout << "\nnormalization factor: " << normalization_factor << "\n";
 
-	auto distortion_coefs = segregation::multiscalar::get_distortion_coefs(focal_distance_indexes, convergence_coefficients);
-	std::cout << "\ndistortion coefs: " << distortion_coefs << "\n";
+	auto distortion_coefs = segregation::multiscalar::get_distortion_coefs(focal_distance_indexes, convergence_thresholds);
+	std::cout << "distortion coefs: " << distortion_coefs << "\n";
+
+	auto normalized_distortion_coefs = segregation::multiscalar::get_distortion_coefs(focal_distance_indexes, convergence_thresholds, normalization_factor);
+	std::cout << "normalized distortion coefs: " << normalized_distortion_coefs << " < " << *std::max_element(normalized_distortion_coefs.begin(), normalized_distortion_coefs.end()) << "\n";
 }
