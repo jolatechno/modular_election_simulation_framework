@@ -102,7 +102,7 @@ int main() {
 
 	std::cout << "Computing full analysis...\n";
 
-	auto normalized_distortion_coefs = segregation::multiscalar::get_normalized_distortion_coefs_fast(votes, traj_idxes, convergence_thresholds, distances);
+	auto normalized_distortion_coefs = segregation::multiscalar::get_normalized_distortion_coefs_fast(votes, traj_idxes, convergence_thresholds); //, distances);
 	std::cout << "\nnormalized distortion coefs: " << normalized_distortion_coefs << "  <<  (" << *std::max_element(normalized_distortion_coefs.begin(), normalized_distortion_coefs.end()) << ")\n";
 
 	H5::Group full_analysis = output_file.createGroup("full_analysis");

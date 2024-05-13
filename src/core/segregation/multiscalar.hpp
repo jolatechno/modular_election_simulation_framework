@@ -203,8 +203,6 @@ namespace segregation::multiscalar {
 				max_normalization_factor = std::max(max_normalization_factor, distortion_coefs[0]);
 			}
 
-			std::cout << max_normalization_factor << "\n";
-
 			return max_normalization_factor;
 		}
 	}
