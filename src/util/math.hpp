@@ -24,8 +24,11 @@ namespace util::math {
 	template<typename Type>
 	std::vector<size_t> get_sorted_indexes(const std::vector<Type> &Y) {
 		std::vector<size_t> indexes(Y.size());
+		std::iota(indexes.begin(), indexes.end(), 0);
 
-		/* TODO */
+		std::sort(indexes.begin(), indexes.end(), [&Y](size_t i, size_t j) {
+			return Y[i] < Y[j];
+		});
 
 		return indexes;
 	}
