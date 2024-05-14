@@ -105,9 +105,21 @@ int main() {
 
 			return std::pair<std::vector<size_t>, std::vector<double>>(traj_idxes_slice[0], accumulated_trajectory_pop[0]);
 		});
-	std::cout << "\nnormalized distortion coefs: " << normalized_distortion_coefs_pop << "  <<  (" << *std::max_element(normalized_distortion_coefs_pop.begin(), normalized_distortion_coefs_pop.end()) << ")\n";
+	std::cout << "\nnormalized distortion coefs (pop): " << normalized_distortion_coefs_pop << "  <<  (" << *std::max_element(normalized_distortion_coefs_pop.begin(), normalized_distortion_coefs_pop.end()) << ")\n";
+
+	auto normalized_distortion_coefs_dist = segregation::multiscalar::get_normalized_distortion_coefs_fast(votes, convergence_thresholds,
+		(std::function<std::pair<std::vector<size_t>, std::vector<float>>(size_t)>) [&votes, &lat, &lon](size_t i) {
+			auto distances_slice  = segregation::map::util::get_distances(lat, lon, std::vector<size_t>{i});
+			auto traj_idxes_slice = segregation::multiscalar::get_closest_neighbors(distances_slice);
+
+			std::sort(distances_slice[0].begin(), distances_slice[0].end());
+
+			return std::pair<std::vector<size_t>, std::vector<float>>(traj_idxes_slice[0], distances_slice[0]);
+		});
+	std::cout << "\nnormalized distortion coefs (dist): " << normalized_distortion_coefs_dist << "  <<  (" << *std::max_element(normalized_distortion_coefs_dist.begin(), normalized_distortion_coefs_dist.end()) << ")\n";
 
 	H5::Group full_analysis = output_file.createGroup("full_analysis");
-	util::hdf5io::H5WriteVector(full_analysis, normalized_distortion_coefs,     "normalized_distortion_coefs");
-	util::hdf5io::H5WriteVector(full_analysis, normalized_distortion_coefs_pop, "normalized_distortion_coefs_pop");
+	util::hdf5io::H5WriteVector(full_analysis, normalized_distortion_coefs,      "normalized_distortion_coefs");
+	util::hdf5io::H5WriteVector(full_analysis, normalized_distortion_coefs_pop,  "normalized_distortion_coefs_pop");
+	util::hdf5io::H5WriteVector(full_analysis, normalized_distortion_coefs_dist, "normalized_distortion_coefs_dist");
 }
