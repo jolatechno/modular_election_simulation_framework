@@ -11,15 +11,15 @@ namespace segregation::multiscalar::util {
 		std::vector<std::vector<Type>> accumulated_trajectory(indexes.size(),  std::vector<Type>(indexes[0].size()));
 
 		for (size_t i = 0; i < indexes.size(); ++i) {
-			accumulated_trajectory[i][indexes[i][0]] = 0;
+			accumulated_trajectory[i][0] = 0;
 
 			for (size_t j = 0; j < indexes[0].size(); ++j) {
 				if (j > 0) {
-					accumulated_trajectory[i][indexes[i][j]] = accumulated_trajectory[i][indexes[i][j-1]];
+					accumulated_trajectory[i][j] = accumulated_trajectory[i][j-1];
 				}
 
 				for (size_t k = 0; k < vects.size(); ++k) {
-					accumulated_trajectory[i][indexes[i][j]] += vects[k][indexes[i][j]];
+					accumulated_trajectory[i][j] += vects[k][indexes[i][j]];
 				}
 			}
 		}

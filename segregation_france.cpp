@@ -111,6 +111,8 @@ int main() {
 			auto distances_slice  = segregation::map::util::get_distances(lat, lon, std::vector<size_t>{i});
 			auto traj_idxes_slice = segregation::multiscalar::get_closest_neighbors(distances_slice);
 
+			std::sort(distances_slice[0].begin(), distances_slice[0].end());
+
 			return std::pair<std::vector<size_t>, std::vector<float>>(traj_idxes_slice[0], distances_slice[0]);
 		});
 	std::cout << "\nnormalized distortion coefs (dist): " << normalized_distortion_coefs_dist << "  <<  (" << *std::max_element(normalized_distortion_coefs_dist.begin(), normalized_distortion_coefs_dist.end()) << ")\n";
