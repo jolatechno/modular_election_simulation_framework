@@ -100,8 +100,7 @@ int main() {
 			auto distances_slice  = segregation::map::util::get_distances(lat, lon, std::vector<size_t>{i});
 			auto traj_idxes_slice = segregation::multiscalar::get_closest_neighbors(distances_slice);
 
-			auto this_trajectories_votes    = segregation::multiscalar::get_trajectories(votes, traj_idxes_slice);
-			auto accumulated_trajectory_pop = segregation::multiscalar::util::get_accumulated_trajectory(this_trajectories_votes);
+			auto accumulated_trajectory_pop = segregation::multiscalar::util::get_accumulated_trajectory(votes, traj_idxes_slice);
 
 			return std::pair<std::vector<size_t>, std::vector<double>>(traj_idxes_slice[0], accumulated_trajectory_pop[0]);
 		});
@@ -111,8 +110,6 @@ int main() {
 		(std::function<std::pair<std::vector<size_t>, std::vector<float>>(size_t)>) [&votes, &lat, &lon](size_t i) {
 			auto distances_slice  = segregation::map::util::get_distances(lat, lon, std::vector<size_t>{i});
 			auto traj_idxes_slice = segregation::multiscalar::get_closest_neighbors(distances_slice);
-
-			std::sort(distances_slice[0].begin(), distances_slice[0].end());
 
 			return std::pair<std::vector<size_t>, std::vector<float>>(traj_idxes_slice[0], distances_slice[0]);
 		});
