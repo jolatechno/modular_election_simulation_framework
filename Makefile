@@ -1,10 +1,14 @@
 all: test simulation_1 simulation_2_from_data simulation_3_convergence_time segregation_france
 
+par: test-par
+
+all+par: all par
+
 test:
 	g++ -O3 test.cpp -o test.out
 
 test-par:
-	g++ -fopenmp -O3 test.cpp -o test.out
+	g++ -fopenmp -O3 test.cpp -o test-par.out
 
 simulation_1:
 	h5c++ -O3 simulation_1.cpp -o simulation_1.out

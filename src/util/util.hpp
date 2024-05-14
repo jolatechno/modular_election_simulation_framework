@@ -26,6 +26,8 @@ namespace util {
 	namespace parallel {
 		const int num_threads = []() {
 		#if defined(_OPENMP)
+			omp_set_max_active_levels(1);
+
 			int num_threads_;
 
 			#pragma omp parallel
