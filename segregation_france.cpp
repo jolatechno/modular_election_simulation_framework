@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "src/core/segregation/multiscalar.hpp"
+#include "src/core/segregation/multiscalar_util.hpp"
 
 #include "src/util/hdf5_util.hpp"
 #include "src/util/util.hpp"
