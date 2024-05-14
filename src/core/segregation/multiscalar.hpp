@@ -8,27 +8,10 @@
 
 namespace segregation::multiscalar {
 	template<typename Type>
-	std::vector<std::vector<Type>> get_distances(const std::vector<Type> &lat, const std::vector<Type> &lon) {
-		std::vector<std::vector<Type>> distances(lat.size(),  std::vector<Type>(lat.size()));
-
-		for (size_t i = 0; i < lat.size(); ++i) {
-			for (size_t j = 0; j < i; ++j) {
-				Type delta_lat = lat[i] - lat[j];
-				Type delta_lon = lon[i] - lon[j];
-
-				distances[i][j] = delta_lat*delta_lat + delta_lon*delta_lon;
-				distances[j][i] = distances[i][j];
-			}
-		}
-
-		return distances;
-	}
-
-	template<typename Type>
 	std::vector<std::vector<size_t>> get_closest_neighbors(const std::vector<std::vector<Type>> &distances) {
 		std::vector<std::vector<size_t>> indexes(distances.size());
 
-		for (size_t i = 0; i < indexes.size(); ++i) {
+		for (size_t i = 0; i < distances.size(); ++i) {
 			indexes[i] = util::math::get_sorted_indexes(distances[i]);
 		}
 
@@ -246,7 +229,7 @@ namespace segregation::multiscalar {
 	template<typename Type1, typename Type2=double>
 	std::vector<Type1> get_normalized_distortion_coefs_fast(
 		const std::vector<std::vector<Type1>> &vects, const std::vector<double> &convergence_thresholds,
-		const std::function<std::pair<std::vector<size_t>, std::vector<Type2>>(int)> func)
+		const std::function<std::pair<std::vector<size_t>, std::vector<Type2>>(size_t)> func)
 	{
 		std::vector<Type1> distortion_coefs(vects[0].size());
 		std::vector<std::vector<Type2>>  Xvalues_slice(1);

@@ -2,6 +2,7 @@
 
 #include "src/core/segregation/multiscalar.hpp"
 #include "src/core/segregation/multiscalar_util.hpp"
+#include "src/core/segregation/map_util.hpp"
 
 #include "src/util/hdf5_util.hpp"
 #include "src/util/util.hpp"
@@ -39,21 +40,6 @@ int main() {
 	util::hdf5io::H5ReadVector(geo_data, lat, "lat");
 	util::hdf5io::H5ReadVector(geo_data, lon, "lon");
 
-
-	std::cout << "Computing distances...\n";
-	auto distances = segregation::multiscalar::get_distances(lat, lon);
-
-	std::cout << "Computing KNN...\n";
-	auto traj_idxes = segregation::multiscalar::get_closest_neighbors(distances);
-
-
-	H5::Group out_geo_data = output_file.createGroup("geo_data");
-	util::hdf5io::H5WriteIrregular2DVector(out_geo_data, distances, "distances");
-	util::hdf5io::H5WriteIrregular2DVector(out_geo_data, distances, "knn");
-
-
-	std::cout << "Reading voter data...\n";
-
 	std::vector<double> populations;
 	H5::Group demo_data = input_file.openGroup("demo_data");
 	util::hdf5io::H5ReadVector(demo_data, populations,  "voter_population");
@@ -68,7 +54,6 @@ int main() {
 
 	auto convergence_thresholds = util::math::logspace<double>(1e-7d, 9.d, 400);
 
-
 	{
 		std::vector<size_t> full_analyze_idxs(lat.size());
 		std::iota(full_analyze_idxs.begin(), full_analyze_idxs.end(), 0);
@@ -76,22 +61,20 @@ int main() {
 		full_analyze_idxs.resize(N_full_analyze);
 		std::sort(full_analyze_idxs.begin(), full_analyze_idxs.end());
 
-		std::vector<std::vector<size_t>> traj_idxes_slice(N_full_analyze);
-		for (size_t i = 0; i < N_full_analyze; ++i) {
-			traj_idxes_slice[i] = traj_idxes[full_analyze_idxs[i]];
-		}
-
-		H5::Group partial_analysis = output_file.createGroup("partial_analysis");
-		util::hdf5io::H5WriteVector(           partial_analysis, full_analyze_idxs, "full_analyze_idxs");
-		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, traj_idxes_slice,  "knn");
-
-
 		std::cout << "Computing partial analysis...\n";
 
 
+		auto distances_slice       = segregation::map::util::get_distances(lat, lon, full_analyze_idxs);
+		auto traj_idxes_slice      = segregation::multiscalar::get_closest_neighbors(distances_slice);
 		auto vote_trajectories     = segregation::multiscalar::get_trajectories(votes, traj_idxes_slice);
 		auto KLdiv_trajectories    = segregation::multiscalar::get_KLdiv_trajectories(vote_trajectories);
 		auto focal_distances_idxes = segregation::multiscalar::get_focal_distance_indexes(KLdiv_trajectories, convergence_thresholds);
+
+
+		H5::Group partial_analysis = output_file.createGroup("partial_analysis");
+		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, distances_slice,   "distances");
+		util::hdf5io::H5WriteVector(           partial_analysis, full_analyze_idxs, "full_analyze_idxs");
+		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, traj_idxes_slice,  "knn");
 
 		for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
 			std::string field_name = "vote_trajectory_" + candidates_from_left_to_right[icandidate];
@@ -104,8 +87,11 @@ int main() {
 	std::cout << "Computing full analysis...\n";
 
 	auto normalized_distortion_coefs = segregation::multiscalar::get_normalized_distortion_coefs_fast(votes, convergence_thresholds,
-		(std::function<std::pair<std::vector<size_t>, std::vector<double>>(int)>) [&traj_idxes](int i) {
-			return std::pair<std::vector<size_t>, std::vector<double>>(traj_idxes[i], {});
+		(std::function<std::pair<std::vector<size_t>, std::vector<double>>(size_t)>) [&lat, &lon](size_t i) {
+			auto distances_slice  = segregation::map::util::get_distances(lat, lon, std::vector<size_t>{i});
+			auto traj_idxes_slice = segregation::multiscalar::get_closest_neighbors(distances_slice);
+
+			return std::pair<std::vector<size_t>, std::vector<double>>(traj_idxes_slice[0], {});
 		});
 	std::cout << "\nnormalized distortion coefs: " << normalized_distortion_coefs << "  <<  (" << *std::max_element(normalized_distortion_coefs.begin(), normalized_distortion_coefs.end()) << ")\n";
 
