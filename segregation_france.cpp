@@ -26,7 +26,7 @@ const int N_candidates = 12;
 
 const int N_full_analyze = 800;
 
-const char* input_file_name  = "output/preprocessed.h5";
+const char* input_file_name  = "output/preprocessed_partial.h5";
 const char* output_file_name = "output/segregation_output.h5";
 
 
