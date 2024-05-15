@@ -25,6 +25,7 @@ const std::vector<std::string> candidates_from_left_to_right = {
 const int N_candidates = 12;
 
 const int N_full_analyze = 800;
+const int N_thresh       = 400;
 
 const char* input_file_name  = "output/preprocessed_partial.h5";
 const char* output_file_name = "output/segregation_output.h5";
@@ -40,6 +41,11 @@ int main() {
 	util::hdf5io::H5ReadVector(geo_data, lat, "lat");
 	util::hdf5io::H5ReadVector(geo_data, lon, "lon");
 
+	H5::Group output_geo_data = output_file.createGroup("geo_data");
+	util::hdf5io::H5WriteVector(output_geo_data, lat, "lat");
+	util::hdf5io::H5WriteVector(output_geo_data, lon, "lon");
+
+
 	std::vector<double> populations;
 	H5::Group demo_data = input_file.openGroup("demo_data");
 	util::hdf5io::H5ReadVector(demo_data, populations,  "voter_population");
@@ -52,7 +58,7 @@ int main() {
 	}
 
 
-	auto convergence_thresholds = util::math::logspace<double>(1e-7d, 9.d, 400);
+	auto convergence_thresholds = util::math::logspace<double>(1e-7d, 9.d, N_thresh);
 
 	{
 		std::vector<size_t> full_analyze_idxs(lat.size());
@@ -72,9 +78,10 @@ int main() {
 
 
 		H5::Group partial_analysis = output_file.createGroup("partial_analysis");
-		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, distances_slice,   "distances");
-		util::hdf5io::H5WriteVector(           partial_analysis, full_analyze_idxs, "full_analyze_idxs");
-		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, traj_idxes_slice,  "knn");
+		util::hdf5io::H5WriteVector(           partial_analysis, convergence_thresholds, "convergence_thresholds");
+		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, distances_slice,        "distances");
+		util::hdf5io::H5WriteVector(           partial_analysis, full_analyze_idxs,      "full_analyze_idxs");
+		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, traj_idxes_slice,       "knn");
 
 		for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
 			std::string field_name = "vote_trajectory_" + candidates_from_left_to_right[icandidate];
@@ -82,6 +89,17 @@ int main() {
 		}
 		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, KLdiv_trajectories,    "KLdiv_trajectories");
 		util::hdf5io::H5WriteIrregular2DVector(partial_analysis, focal_distances_idxes, "focal_distances_idxes");
+
+
+		std::vector<float> partial_lat(N_full_analyze), partial_lon(N_full_analyze);
+		for (size_t i = 0; i < N_full_analyze; ++i) {
+			partial_lat[i] = lat[full_analyze_idxs[i]];
+			partial_lon[i] = lon[full_analyze_idxs[i]];
+		}
+
+		H5::Group partial_analysis_geo_data = partial_analysis.createGroup("geo_data");
+		util::hdf5io::H5WriteVector(partial_analysis_geo_data, partial_lat, "lat");
+		util::hdf5io::H5WriteVector(partial_analysis_geo_data, partial_lon, "lon");
 	}
 
 	std::cout << "Computing full analysis...\n";
@@ -118,6 +136,7 @@ int main() {
 	std::cout << "\nnormalized distortion coefs (dist): " << normalized_distortion_coefs_dist << "  <<  (" << *std::max_element(normalized_distortion_coefs_dist.begin(), normalized_distortion_coefs_dist.end()) << ")\n";
 
 	H5::Group full_analysis = output_file.createGroup("full_analysis");
+	util::hdf5io::H5WriteVector(full_analysis, convergence_thresholds,           "convergence_thresholds");
 	util::hdf5io::H5WriteVector(full_analysis, normalized_distortion_coefs,      "normalized_distortion_coefs");
 	util::hdf5io::H5WriteVector(full_analysis, normalized_distortion_coefs_pop,  "normalized_distortion_coefs_pop");
 	util::hdf5io::H5WriteVector(full_analysis, normalized_distortion_coefs_dist, "normalized_distortion_coefs_dist");
