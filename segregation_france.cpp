@@ -48,7 +48,7 @@ int main() {
 
 	std::vector<double> populations;
 	H5::Group demo_data = input_file.openGroup("demo_data");
-	util::hdf5io::H5ReadVector(demo_data, populations,  "voter_population");
+	util::hdf5io::H5ReadVector(demo_data, populations, "voter_population");
 
 	std::vector<std::vector<double>> votes(N_candidates);
 	H5::Group vote_data = input_file.openGroup("vote_data");
@@ -105,6 +105,7 @@ int main() {
 	std::cout << "Computing full analysis...\n";
 
 	H5::Group full_analysis = output_file.createGroup("full_analysis");
+	util::hdf5io::H5WriteVector(full_analysis, populations, "voter_population");
 
 	{
 		auto normalized_distortion_coefs = segregation::multiscalar::get_normalized_distortion_coefs_fast(votes,
