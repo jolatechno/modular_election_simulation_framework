@@ -179,10 +179,10 @@ namespace segregation::multiscalar {
 
 					Type delta_X = 1;
 					if (!X_values_slice.empty()) {
-						delta_X = X_values_slice[i+1] - X_values_slice[i];
+						delta_X = X_values_slice[j+1] - X_values_slice[j];
 					}
 
-					normalization_factor += delta_X*(old_diveregnce + delta_X*KL_div)/2;
+					normalization_factor += delta_X*(old_diveregnce + KL_div)/2;
 
 					old_diveregnce = KL_div;
 				}
