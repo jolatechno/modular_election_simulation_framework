@@ -208,54 +208,6 @@ namespace segregation::multiscalar {
 
 	template<typename Type1, typename Type2=double>
 	std::vector<Type1> get_normalized_distortion_coefs_fast(
-		const std::vector<std::vector<Type1>> &vects, const std::vector<std::vector<size_t>> &indexes,
-		const std::vector<std::vector<Type2>> &Xvalues={})
-	{
-		std::vector<Type1> distortion_coefs(indexes.size(), 0);
-
-		std::vector<Type1> traj(vects.size());
-		std::vector<Type1> total_distribution = util::get_total_distribution(vects);
-
-		std::vector<std::vector<size_t>> indexes_slice(1);
-
-
-		for (size_t i = 0; i < indexes.size(); ++i) {
-			indexes_slice[0] = indexes[i];
-
-			auto this_trajectories_ = segregation::multiscalar::get_trajectories(vects, indexes_slice);
-
-			Type1 old_max_KL_div = 0, max_KL_div = 0;
-			for (size_t j = indexes[i].size()-1; j > 0; --j) {
-				for (size_t k = 0; k < vects.size(); ++k) {
-					traj[k] = this_trajectories_[k][0][j];
-				}
-				Type1 KL_div = ::util::math::get_KLdiv(traj, total_distribution);
-
-				max_KL_div = std::max(max_KL_div, KL_div);
-				if (j == indexes[i].size()-1) {
-					old_max_KL_div = max_KL_div;
-				}
-
-				Type2 delta_X = 1;
-				if (Xvalues.size() > i && !Xvalues[i].empty()) {
-					delta_X = Xvalues[i][j] - Xvalues[i][j-1];
-				}
-				distortion_coefs[i] += delta_X*(old_max_KL_div + max_KL_div)/2;
-
-				old_max_KL_div = max_KL_div;
-			}
-		}
-
-		Type1 normalization_coef = get_normalization_factor(total_distribution, Xvalues, vects[0].size());
-		for (Type1 &distortion_coef : distortion_coefs) {
-			distortion_coef /= normalization_coef;
-		}
-		
-		return distortion_coefs;
-	}
-
-	template<typename Type1, typename Type2=double>
-	std::vector<Type1> get_normalized_distortion_coefs_fast(
 		const std::vector<std::vector<Type1>> &vects,
 		const std::function<std::pair<std::vector<size_t>, std::vector<Type2>>(size_t)> func)
 	{
@@ -311,5 +263,20 @@ namespace segregation::multiscalar {
 		}
 		
 		return distortion_coefs;
+	}
+
+	template<typename Type1, typename Type2=double>
+	std::vector<Type1> get_normalized_distortion_coefs_fast(
+		const std::vector<std::vector<Type1>> &vects, const std::vector<std::vector<size_t>> &indexes,
+		const std::vector<std::vector<Type2>> &Xvalues={})
+	{
+		return get_normalized_distortion_coefs_fast(vects,
+			(std::function<std::pair<std::vector<size_t>, std::vector<Type2>>(size_t)>) [&indexes, &Xvalues](size_t i) {
+				if (Xvalues.empty()) {
+					return std::pair<std::vector<size_t>, std::vector<Type2>>(indexes[i], {});
+				} else {
+					return std::pair<std::vector<size_t>, std::vector<Type2>>(indexes[i], Xvalues[i]);
+				}
+			});
 	}
 }
