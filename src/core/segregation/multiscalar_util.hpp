@@ -7,6 +7,22 @@
 
 namespace segregation::multiscalar::util {
 	template<typename Type>
+	std::vector<Type> get_total_distribution(const std::vector<std::vector<Type>> &vects) {
+		std::vector<Type> total_distribution(vects.size());
+
+		Type total = 0;
+		for (size_t k = 0; k < vects.size(); ++k) {
+			total_distribution[k] = std::accumulate(vects[k].begin(), vects[k].end(), 0);
+			total                += total_distribution[k];
+		}
+		for (size_t k = 0; k < vects.size(); ++k) {
+			total_distribution[k] /= total;
+		}
+
+		return total_distribution;
+	}
+	
+	template<typename Type>
 	std::vector<std::vector<Type>> get_accumulated_trajectory(const std::vector<std::vector<Type>> &vects, const std::vector<std::vector<size_t>> &indexes) {
 		std::vector<std::vector<Type>> accumulated_trajectory(indexes.size(),  std::vector<Type>(indexes[0].size()));
 
