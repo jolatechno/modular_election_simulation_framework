@@ -21,3 +21,6 @@ simulation_3_convergence_time:
 
 segregation_france:
 	h5c++ -O3 segregation_france.cpp -o segregation_france.out
+
+segregation_france-par:
+	h5c++ -fopenmp -O3 segregation_france.cpp -o segregation_france-par.out

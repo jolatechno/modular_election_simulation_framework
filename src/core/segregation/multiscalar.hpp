@@ -13,6 +13,7 @@ namespace segregation::multiscalar {
 	std::vector<std::vector<size_t>> get_closest_neighbors(const std::vector<std::vector<Type>> &distances) {
 		std::vector<std::vector<size_t>> indexes(distances.size());
 
+		#pragma omp parallel for
 		for (size_t i = 0; i < distances.size(); ++i) {
 			indexes[i] = ::util::math::get_sorted_indexes(distances[i]);
 		}
@@ -24,6 +25,7 @@ namespace segregation::multiscalar {
 	std::vector<std::vector<Type>> get_trajectories_single(const std::vector<Type> &vect, const std::vector<std::vector<size_t>> &indexes) {
 		std::vector<std::vector<Type>> trajectory(indexes.size(), std::vector<Type>(indexes.size()));
 
+		#pragma omp parallel for
 		for (size_t i = 0; i < indexes.size(); ++i) {
 			Type total = 0.d;
 			for (size_t j = 0; j < indexes[i].size(); ++j) {
@@ -39,6 +41,7 @@ namespace segregation::multiscalar {
 		std::vector<std::vector<std::vector<Type>>> trajectories(vects.size(),
 			std::vector<std::vector<Type>>(indexes.size(), std::vector<Type>(indexes[0].size())));
 
+		#pragma omp parallel for
 		for (size_t i = 0; i < indexes.size(); ++i) {
 			Type total = 0.d;
 			std::vector<Type> running_sum(vects.size(), 0);
@@ -67,7 +70,11 @@ namespace segregation::multiscalar {
 		}
 
 		std::vector<Type> placeholder(trajectories.size());
+
+		#pragma omp parallel for private(placeholder)
 		for (size_t i = 0; i < trajectories[0].size(); ++i) {
+			placeholder.resize(trajectories.size());
+
 			for (size_t j = 0; j < trajectories[0][0].size(); ++j) {
 				for (size_t k = 0; k < trajectories.size(); ++k) {
 					placeholder[k] = trajectories[k][i][j];
@@ -84,6 +91,8 @@ namespace segregation::multiscalar {
 		std::vector<std::vector<double>> KLdiv_trajectories(trajectory.size(), std::vector<double>(trajectory.size()));
 
 		double total_distribution = trajectory[0].back();
+
+		#pragma omp parallel for
 		for (size_t i = 0; i < trajectory.size(); ++i) {
 			for (size_t j = 0; j < trajectory[i].size(); ++j) {
 				KLdiv_trajectories[i][j] = ::util::math::get_KLdiv_single(trajectory[i][j], total_distribution);
@@ -96,6 +105,7 @@ namespace segregation::multiscalar {
 	std::vector<std::vector<size_t>> get_focal_distance_indexes(const std::vector<std::vector<double>> &KLdiv_trajectories, const std::vector<double> &convergence_thresholds) {
 		std::vector<std::vector<size_t>> focal_distance_indexes(KLdiv_trajectories.size(), std::vector<size_t>(convergence_thresholds.size()));
 
+		#pragma omp parallel for
 		for (size_t i = 0; i < KLdiv_trajectories.size(); ++i) {
 			size_t idx = KLdiv_trajectories[0].size()-1;
 			for (size_t j = 0; j < convergence_thresholds.size(); ++j) {
@@ -114,6 +124,7 @@ namespace segregation::multiscalar {
 	std::vector<std::vector<Type>> get_focal_distances(const std::vector<std::vector<double>> &KLdiv_trajectories, const std::vector<double> &convergence_thresholds, const std::vector<std::vector<Type>> &Xvalues) {
 		std::vector<std::vector<Type>> focal_distances(KLdiv_trajectories.size(), std::vector<Type>(convergence_thresholds.size()));
 
+		#pragma omp parallel for
 		for (size_t i = 0; i < KLdiv_trajectories.size(); ++i) {
 			size_t idx = KLdiv_trajectories[0].size()-1;
 			for (size_t j = 0; j < convergence_thresholds.size(); ++j) {
@@ -197,8 +208,11 @@ namespace segregation::multiscalar {
 		} else {
 			Type max_normalization_factor = 0;
 
+			#pragma omp parallel for
 			for (int i = 0; i < Xvalues.size(); ++i) {
 				Type normalization_factor     = distortion_factor(Xvalues[i]);
+
+				#pragma omp critical 
 				     max_normalization_factor = std::max(max_normalization_factor, normalization_factor);
 			}
 
@@ -221,7 +235,12 @@ namespace segregation::multiscalar {
 
 
 		Type1 normalization_coef = 0.d;
+		#pragma omp parallel for private(traj, indexes_slice, Xvalues_slice)
 		for (size_t i = 0; i < vects[0].size(); ++i) {
+			traj.resize(vects.size());
+			indexes_slice.resize(1);
+			Xvalues_slice.resize(1);
+
 			auto [indexes, Xvalues] = func(i);
 			indexes_slice[0]        = indexes;
 			Xvalues_slice[0]        = Xvalues;
@@ -251,10 +270,14 @@ namespace segregation::multiscalar {
 
 			if (Xvalues.empty()) {
 				if (i == 0) {
+					#pragma omp critical 
 					normalization_coef = get_normalization_factor(total_distribution, std::vector<std::vector<Type2>>{}, vects[0].size());
 				}
 			} else {
-				normalization_coef = std::max(normalization_coef, get_normalization_factor(total_distribution, Xvalues_slice));
+				Type1 this_normalization_coef =  get_normalization_factor(total_distribution, Xvalues_slice);
+
+				#pragma omp critical 
+				normalization_coef = std::max(normalization_coef, this_normalization_coef);
 			}
 		}
 

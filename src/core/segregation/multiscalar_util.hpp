@@ -26,6 +26,7 @@ namespace segregation::multiscalar::util {
 	std::vector<std::vector<Type>> get_accumulated_trajectory(const std::vector<std::vector<Type>> &vects, const std::vector<std::vector<size_t>> &indexes) {
 		std::vector<std::vector<Type>> accumulated_trajectory(indexes.size(),  std::vector<Type>(indexes[0].size()));
 
+		#pragma omp parallel for
 		for (size_t i = 0; i < indexes.size(); ++i) {
 			accumulated_trajectory[i][0] = 0;
 
