@@ -4,6 +4,8 @@
 		"compute_knn"        : true,
 		"N_neighbors"        : 6,
 		"num_commune_sample" : -1,
+		"lat_lim"            : [46, 50],
+		"lon_lim"            : [2, 4],
 		"list_departement"   : ["75"]
 	},
 	"output_file_segregation" : "segregation-output-paris.h5",
@@ -50,6 +52,8 @@
 			"compute_knn"        : true,
 			"N_neighbors"        : 6,
 			"num_commune_sample" : -1,
+			"lat_lim"            : [48, 49.3],
+			"lon_lim"            : [2, 3],
 			"list_departement"   : ["75"]
 		},
 		"output_file_segregation"    : "segregation-output-paris.h5",
@@ -68,6 +72,8 @@
 		"preprocessing" : {
 			"compute_knn"        : false,
 			"num_commune_sample" : -1,
+			"lat_lim"            : [48, 49.3],
+			"lon_lim"            : [1.5, 3],
 			"list_departement"   : ["75", "92", "93", "94"]
 		},
 		"output_file_segregation" : "segregation-output-petite-couronne.h5",
@@ -86,6 +92,8 @@
 		"preprocessing" : {
 			"compute_knn"        : false,
 			"num_commune_sample" : -1,
+			"lat_lim"            : [48, 49.3],
+			"lon_lim"            : [1.5, 4],
 			"list_departement"   : ["75", "77", "78", "91", "92", "93", "94", "95"]
 		},
 		"output_file_segregation" : "segregation-output-region-paris.h5",
@@ -104,6 +112,8 @@
 		"preprocessing" : {
 			"compute_knn"        : false,
 			"num_commune_sample" : -1,
+			"lat_lim"            : [41, 55],
+			"lon_lim"            : [-7, 9],
 			"list_departement"   : [
 				"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
 				"13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
