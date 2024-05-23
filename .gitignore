@@ -3,3 +3,4 @@
 
 output/**
 !output/Readme.txt
+!output/config.json

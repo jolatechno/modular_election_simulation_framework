@@ -1,4 +1,4 @@
-all: test simulation_1 simulation_2_from_data simulation_3_convergence_time segregation_france
+all: test simulation_1 simulation_2_from_data simulation_3_convergence_time segregation
 
 par: test-par
 
@@ -19,8 +19,8 @@ simulation_2_from_data:
 simulation_3_convergence_time:
 	h5c++ -O3 simulation_3_convergence_time.cpp -o simulation_3_convergence_time.out
 
-segregation_france:
-	h5c++ -O3 segregation_france.cpp -o segregation_france.out
+segregation:
+	h5c++ -ljsoncpp -O3 segregation.cpp -o segregation.out
 
-segregation_france-par:
-	h5c++ -fopenmp -O3 segregation_france.cpp -o segregation_france-par.out
+segregation-par:
+	h5c++ -ljsoncpp -fopenmp -O3 segregation.cpp -o segregation-par.out

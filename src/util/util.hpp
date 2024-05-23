@@ -61,4 +61,14 @@ namespace util {
 		return random_generators[0];
 	#endif
 	}
+
+	std::string get_first_cmd_arg(int argc, char *argv[]) {
+		std::string cmd_arg = "";
+
+		if (argc < 2) {
+			return cmd_arg;
+		}
+
+		return argv[1];
+	}
 }

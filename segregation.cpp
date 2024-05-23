@@ -4,6 +4,7 @@
 #include "src/core/segregation/multiscalar_util.hpp"
 #include "src/core/segregation/map_util.hpp"
 
+#include "src/util/json_util.hpp"
 #include "src/util/hdf5_util.hpp"
 #include "src/util/util.hpp"
 
@@ -24,16 +25,23 @@ const std::vector<std::string> candidates_from_left_to_right = {
 };
 const int N_candidates = 12;
 
-const int N_full_analyze = 800;
-const int N_thresh       = 400;
-
-const char* input_file_name  = "output/preprocessed_partial.h5";
-const char* output_file_name = "output/segregation_output.h5";
+const std::string root        = "output/";
+const std::string config_file = "config.json";
 
 
-int main() {
-	H5::H5File output_file(output_file_name, H5F_ACC_TRUNC);
-	H5::H5File input_file( input_file_name,  H5F_ACC_RDWR);
+int main(int argc, char *argv[]) {
+	std::string config_name = util::get_first_cmd_arg(argc, argv);
+	auto config             = util::json::read_config((root + config_file).c_str(), config_name);
+
+	const std::string input_file_name  = root + std::string(config["preprocessed_file"      ].asString());
+	const std::string output_file_name = root + std::string(config["output_file_segregation"].asString());
+
+	const int N_full_analyze = config["N_full_analyze"].asInt();
+	const int N_thresh       = config["N_thresh"      ].asInt();
+
+
+	H5::H5File output_file(output_file_name.c_str(), H5F_ACC_TRUNC);
+	H5::H5File input_file( input_file_name .c_str(), H5F_ACC_RDWR);
 
 
 	std::vector<float> lat, lon;
