@@ -4,16 +4,16 @@
 		"compute_knn"        : true,
 		"N_neighbors"        : 6,
 		"num_commune_sample" : -1,
-		"list_departement"   : ["75"],
+		"list_departement"   : ["75"]
 	},
-
 	"output_file_segregation" : "segregation-output-paris.h5",
 	"segregation" : {
 		"N_full_analyze"          : 800,
 		"N_thresh"                : 400,
+		"postprocessing" : {
+			"base_filename" : "segregation/paris_"
+		}
 	},
-
-
 	"output_file_simultion" : "simulation-output-fromdata.h5",
 	"simulation" : {
 		"N_select"                           : 15,
@@ -28,15 +28,19 @@
 		"N_it"       : 2101,
 		"n_election" : 350,
 		"n_save"     : 15,
+		"postprocessing" : {
+			
+		}
 	},
-
-
 	"output_file_convergence_time" : "output-simulation-convergence-time.h5",
 	"convergence_time" : {
 		"N_select"   : 40,
 		"N_try"      : 20,
 		"N_it"       : 2001,
 		"n_save"     : 20,
+		"postprocessing" : {
+			
+		}
 	},
 
 
@@ -46,45 +50,54 @@
 			"compute_knn"        : true,
 			"N_neighbors"        : 6,
 			"num_commune_sample" : -1,
-			"list_departement"   : ["75"],
+			"list_departement"   : ["75"]
 		},
-
 		"output_file_segregation"    : "segregation-output-paris.h5",
 		"segregation" : {
 			"N_full_analyze" : 800,
-			"N_thresh"       : 400
+			"N_thresh"       : 400,
+			"postprocessing" : {
+				"base_filename" : "segregation/paris_"
+			}
 		}
 	},
+
 
 	"petite-couronne" : {
 		"preprocessed_file"  : "preprocessed-petite-couronne.h5",
 		"preprocessing" : {
 			"compute_knn"        : false,
 			"num_commune_sample" : -1,
-			"list_departement"   : ["75", "92", "93", "94"],
+			"list_departement"   : ["75", "92", "93", "94"]
 		},
-
 		"output_file_segregation" : "segregation-output-petite-couronne.h5",
 		"segregation" : {
 			"N_full_analyze"          : 800,
-			"N_thresh"                : 400
+			"N_thresh"                : 400,
+			"postprocessing" : {
+				"base_filename" : "segregation/petite-couronne_"
+			}
 		}
 	},
+
 
 	"region-paris" : {
 		"preprocessed_file"  : "preprocessed-region-paris.h5",
 		"preprocessing" : {
 			"compute_knn"        : false,
 			"num_commune_sample" : -1,
-			"list_departement"   : ["75", "77", "78", "91", "92", "93", "94", "95"],
+			"list_departement"   : ["75", "77", "78", "91", "92", "93", "94", "95"]
 		},
-
 		"output_file_segregation" : "segregation-output-region-paris.h5",
 		"segregation" : {
 			"N_full_analyze"          : 800,
-			"N_thresh"                : 400
+			"N_thresh"                : 400,
+			"postprocessing" : {
+				"base_filename" : "segregation/region-paris_"
+			}
 		}
 	},
+
 
 	"france" : {
 		"preprocessed_file"  : "preprocessed-france.h5",
@@ -101,13 +114,15 @@
 				"63", "64", "65", "66", "67", "68", "69", "70", "71", "72",
 				"73", "74", "75", "76", "77", "78", "79", "80", "81", "82",
 				"83", "84", "85", "86", "87", "88", "89", "90", "91", "92",
-				"93", "94", "95"],
+				"93", "94", "95"]
 		},
-
 		"output_file_segregation" : "segregation-output-segregation-france.h5",
 		"segregation" : {
 			"N_full_analyze"          : 800,
-			"N_thresh"                : 400
+			"N_thresh"                : 400,
+			"postprocessing" : {
+				"base_filename" : "segregation/france_"
+			}
 		}
-	},
+	}
 }
