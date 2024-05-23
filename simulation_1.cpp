@@ -25,7 +25,7 @@ const int    N_it       = 3001;
 const int    n_election = 500;
 const int    n_save     = 10;
 
-const char* file_name = "output/output_1.h5";
+const char* file_name = "output/output-simulation.h5";
 
 
 int main() {

@@ -9,8 +9,9 @@
 #include "src/implementations/Nvoter_model.hpp"
 #include "src/implementations/population_Nvoter_model.hpp"
 
-#include "src/util/util.hpp"
+#include "src/util/json_util.hpp"
 #include "src/util/hdf5_util.hpp"
+#include "src/util/util.hpp"
 
 
 const std::vector<std::string> candidates_from_left_to_right = {
@@ -29,15 +30,9 @@ const std::vector<std::string> candidates_from_left_to_right = {
 };
 const int N_candidates = 12;
 
-const size_t N_select = 40;
+const std::string root        = "output/";
+const std::string config_file = "config.json";
 
-      size_t N_nodes;
-const int    N_try      = 20;
-const int    N_it       = 2001;
-const int    n_save     = 20;
-
-const char* input_file_name  = "output/preprocessed.h5";
-const char* output_file_name = "output/output_3.h5";
 
 template<class Type>
 double get_median(std::vector<Type> vec) {
@@ -47,7 +42,21 @@ double get_median(std::vector<Type> vec) {
 	return vec[median_element];
 } 
 
-int main() {
+
+int main(int argc, char *argv[]) {
+	std::string config_name = util::get_first_cmd_arg(argc, argv);
+	auto config             = util::json::read_config((root + config_file).c_str(), config_name);
+
+	const std::string input_file_name  = root + std::string(config["preprocessed_file"    ].asString());
+	const std::string output_file_name = root + std::string(config["output_file_convergence_time"].asString());
+
+	const size_t N_select = config["convergence_time"]["N_select"].asInt();
+
+	      size_t N_nodes;
+	const int    N_try  = config["convergence_time"]["N_try" ].asInt();
+	const int    N_it   = config["convergence_time"]["N_it"  ].asInt();
+	const int    n_save = config["convergence_time"]["n_save"].asInt();
+
 	H5::H5File output_file(output_file_name, H5F_ACC_TRUNC);
 	H5::H5File input_file( input_file_name,  H5F_ACC_RDWR);
 

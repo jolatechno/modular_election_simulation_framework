@@ -15,6 +15,8 @@
 #include "src/implementations/Nvoter_stuborn_model.hpp"
 #include "src/implementations/population_Nvoter_stuborn_model.hpp"
 
+#include "src/util/json_util.hpp"
+#include "src/util/hdf5_util.hpp"
 #include "src/util/util.hpp"
 
 
@@ -34,24 +36,9 @@ const std::vector<std::string> candidates_from_left_to_right = {
 };
 const int N_candidates = 12;
 
-const size_t N_select                           = 15;
-const double dt                                 = 0.2;
-const double overtoon_multiplier                = 0.7;
-const double overtoon_radicalization_multiplier = 0.2;
-const double overtoon_radius                    = 0.25;
-const double frustration_multiplier             = 0.07;
+const std::string root        = "output/";
+const std::string config_file = "config.json";
 
-const double initial_radicalization_multiplier = 0.1;
-
-      size_t N_nodes;
-const int    N_counties = 2;
-const int    N_try      = 10;
-const int    N_it       = 2101;
-const int    n_election = 350;
-const int    n_save     = 15;
-
-const char* input_file_name  = "output/preprocessed.h5";
-const char* output_file_name = "output/output_2.h5";
 
 template<class Type>
 double get_median(std::vector<Type> vec) {
@@ -62,9 +49,33 @@ double get_median(std::vector<Type> vec) {
 	return vec_copy[median_element];
 } 
 
-int main() {
-	H5::H5File output_file(output_file_name, H5F_ACC_TRUNC);
-	H5::H5File input_file( input_file_name,  H5F_ACC_RDWR);
+
+int main(int argc, char *argv[]) {
+	std::string config_name = util::get_first_cmd_arg(argc, argv);
+	auto config             = util::json::read_config((root + config_file).c_str(), config_name);
+
+	const std::string input_file_name  = root + std::string(config["preprocessed_file"    ].asString());
+	const std::string output_file_name = root + std::string(config["output_file_simultion"].asString());
+
+
+	const size_t N_select                           = config["simulation"]["N_select"                          ].asInt();
+	const double dt                                 = config["simulation"]["dt"                                ].asDouble();
+	const double overtoon_multiplier                = config["simulation"]["overtoon_multiplier"               ].asDouble();
+	const double overtoon_radicalization_multiplier = config["simulation"]["overtoon_radicalization_multiplier"].asDouble();
+	const double overtoon_radius                    = config["simulation"]["overtoon_radius"                   ].asDouble();
+	const double frustration_multiplier             = config["simulation"]["frustration_multiplier"            ].asDouble();
+
+	const double initial_radicalization_multiplier = config["simulation"]["initial_radicalization_multiplier"].asDouble();
+
+	      size_t N_nodes;
+	const int    N_counties = config["simulation"]["N_counties"].asInt();
+	const int    N_try      = config["simulation"]["N_try"     ].asInt();
+	const int    N_it       = config["simulation"]["N_it"      ].asInt();
+	const int    n_election = config["simulation"]["n_election"].asInt();
+	const int    n_save     = config["simulation"]["n_save"    ].asInt();
+
+	H5::H5File output_file(output_file_name.c_str(), H5F_ACC_TRUNC);
+	H5::H5File input_file( input_file_name .c_str(), H5F_ACC_RDWR);
 
 
 	auto *election = new BPsimulation::core::agent::population::PopulationElection<BPsimulation::implem::Nvoter_stuborn<N_candidates>>(new BPsimulation::implem::Nvoter_majority_election<N_candidates, BPsimulation::implem::Nvoter_stuborn<N_candidates>>());

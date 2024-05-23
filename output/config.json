@@ -1,13 +1,40 @@
 {
-	"preprocessed_file"  : "preprocessed.h5",
+	"preprocessed_file"  : "preprocessed-paris.h5",
 	"compute_knn"        : true,
 	"N_neighbors"        : 6,
 	"num_commune_sample" : -1,
 	"list_departement"   : ["75"],
 
-	"output_file_segregation" : "segregation-output.h5",
+	"output_file_segregation" : "segregation-output-paris.h5",
 	"N_full_analyze"          : 800,
 	"N_thresh"                : 400,
+
+
+	"output_file_simultion" : "simulation-output-fromdata.h5",
+	"simulation" : {
+		"N_select"                           : 15,
+		"dt"                                 : 0.2,
+		"overtoon_multiplier"                : 0.7,
+		"overtoon_radicalization_multiplier" : 0.2,
+		"overtoon_radius"                    : 0.25,
+		"frustration_multiplier"             : 0.07,
+		"initial_radicalization_multiplier" : 0.1,
+		"N_counties" : 2,
+		"N_try"      : 10,
+		"N_it"       : 2101,
+		"n_election" : 350,
+		"n_save"     : 15,
+	},
+
+
+	"output_file_convergence_time" : "output-simulation-convergence-time.h5",
+	"convergence_time" : {
+		"N_select"   : 40,
+		"N_try"      : 20,
+		"N_it"       : 2001,
+		"n_save"     : 20,
+	},
+
 
 	"paris" :  {
 		"preprocessed_file"  : "preprocessed-paris.h5",
