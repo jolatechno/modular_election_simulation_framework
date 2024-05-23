@@ -43,8 +43,8 @@
 		"N_thresh"                : 400
 	},
 
-	"segregation-france" : {
-		"preprocessed_file"  : "preprocessed-segregation-france.h5",
+	"france" : {
+		"preprocessed_file"  : "preprocessed-france.h5",
 		"compute_knn"        : false,
 		"num_commune_sample" : -1,
 		"list_departement"   : [
