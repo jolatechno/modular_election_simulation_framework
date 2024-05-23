@@ -36,8 +36,8 @@ int main(int argc, char *argv[]) {
 	const std::string input_file_name  = root + std::string(config["preprocessed_file"      ].asString());
 	const std::string output_file_name = root + std::string(config["output_file_segregation"].asString());
 
-	const int N_full_analyze = config["N_full_analyze"].asInt();
-	const int N_thresh       = config["N_thresh"      ].asInt();
+	const int N_full_analyze = config["segregation"]["N_full_analyze"].asInt();
+	const int N_thresh       = config["segregation"]["N_thresh"      ].asInt();
 
 
 	H5::H5File output_file(output_file_name.c_str(), H5F_ACC_TRUNC);
