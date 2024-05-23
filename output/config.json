@@ -29,7 +29,7 @@
 		"n_election" : 350,
 		"n_save"     : 15,
 		"postprocessing" : {
-			
+			"base_filename" : "simulation_fromdata/"
 		}
 	},
 	"output_file_convergence_time" : "output-simulation-convergence-time.h5",
@@ -39,7 +39,7 @@
 		"N_it"       : 2001,
 		"n_save"     : 20,
 		"postprocessing" : {
-			
+			"base_filename" : "convergence_time/"
 		}
 	},
 

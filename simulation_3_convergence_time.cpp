@@ -71,18 +71,14 @@ int main(int argc, char *argv[]) {
 	N_nodes = network->num_nodes();
 
 
-	std::vector<float> lat;
+	std::vector<float> lat, lon;
 	H5::Group geo_data = input_file.openGroup("geo_data");
 	util::hdf5io::H5ReadVector(geo_data, lat, "lat");
+	util::hdf5io::H5ReadVector(geo_data, lon, "lon");
 
-	std::vector<std::vector<size_t>> counties = {{}, {}};
-	float median = get_median(lat);
-	for (size_t node = 0; node < N_nodes; ++node) {
-		int group = lat[node] < median;
-		counties[group].push_back(node);
-	}
-
-	BPsimulation::io::write_counties_to_file(counties, output_file);
+	H5::Group output_geo_data = output_file.createGroup("geo_data");
+	util::hdf5io::H5WriteVector(output_geo_data, lat, "lat");
+	util::hdf5io::H5WriteVector(output_geo_data, lon, "lon");
 
 
 	std::vector<double> populations;
@@ -110,7 +106,6 @@ int main(int argc, char *argv[]) {
 
 
 	BPsimulation::implem::Nvoter_majority_election_result<N_candidates>* general_election_results;
-	std::vector<BPsimulation::core::election::ElectionResultTemplate*> counties_election_results, stuborness_results;
 	for (int itry = 0; itry < N_try; ++itry) {
 		if (itry > 0) {
 			BPsimulation::io::read_agent_states_from_file(network, agent_serializer, output_file, "/initial_state");

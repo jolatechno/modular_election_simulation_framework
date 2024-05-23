@@ -98,9 +98,14 @@ int main(int argc, char *argv[]) {
 	N_nodes = network->num_nodes();
 
 
-	std::vector<float> lat;
+	std::vector<float> lat, lon;
 	H5::Group geo_data = input_file.openGroup("geo_data");
 	util::hdf5io::H5ReadVector(geo_data, lat, "lat");
+	util::hdf5io::H5ReadVector(geo_data, lon, "lon");
+
+	H5::Group output_geo_data = output_file.createGroup("geo_data");
+	util::hdf5io::H5WriteVector(output_geo_data, lat, "lat");
+	util::hdf5io::H5WriteVector(output_geo_data, lon, "lon");
 
 	std::vector<std::vector<size_t>> counties = {{}, {}};
 	float median = get_median(lat);
