@@ -220,6 +220,32 @@ namespace segregation::multiscalar {
 		}
 	}
 
+	template<typename Type=double>
+	std::vector<Type> get_normalization_factor_from_KLdiv(const std::vector<std::vector<double>> &KLdiv_trajectories, const std::vector<std::vector<Type>> &Xvalues={}) {
+		std::vector<Type> distortion_coefs(KLdiv_trajectories.size(), 0);
+
+		#pragma omp parallel for
+		for (size_t i = 0; i < KLdiv_trajectories.size(); ++i) {
+			Type old_max_KL_div = 0, max_KL_div = 0;
+			for (size_t j = KLdiv_trajectories[0].size()-1; j > 0; --j) {
+				max_KL_div = std::max(max_KL_div, KLdiv_trajectories[i][j]);
+				if (j == KLdiv_trajectories[0].size()-1) {
+					old_max_KL_div = max_KL_div;
+				}
+
+				Type delta_X = 1;
+				if (!Xvalues.empty()) {
+					delta_X = Xvalues[i][j] - Xvalues[i][j-1];
+				}
+				distortion_coefs[i] += delta_X*(old_max_KL_div + max_KL_div)/2;
+
+				old_max_KL_div = max_KL_div;
+			}
+		}
+
+		return distortion_coefs;
+	}
+
 	template<typename Type1, typename Type2=double>
 	std::vector<Type1> get_normalized_distortion_coefs_fast(
 		const std::vector<std::vector<Type1>> &vects,
