@@ -213,4 +213,17 @@ namespace BPsimulation::implem {
 			}
 		}
 	};
+
+	namespace util {
+		void accumulate_stuborn_votes(std::vector<std::vector<double>> &votes) {
+			int N_candidates = votes.size()/2;
+			for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
+				for (size_t i = 0; i < votes[0].size(); ++i) {
+					votes[icandidate][i] += votes[N_candidates + icandidate][i];
+				}
+			}
+
+			votes.resize(N_candidates);
+		}
+	}
 }
