@@ -150,9 +150,8 @@ namespace segregation::multiscalar {
 		return distortion_coefs;
 	}
 
-
-	template<typename Type=double>
-	std::vector<Type> get_normalization_factor_from_KLdiv(const std::vector<std::vector<double>> &KLdiv_trajectories, const std::vector<std::vector<Type>> &Xvalues={}) {
+	template<typename Type=double, typename Type2=double>
+	std::vector<Type> get_distortion_coefs_from_KLdiv(const std::vector<std::vector<double>> &KLdiv_trajectories, const std::vector<std::vector<Type>> &Xvalues={}, const Type2 &normalization_coef=1.d) {
 		std::vector<Type> distortion_coefs(KLdiv_trajectories.size(), 0);
 
 		#pragma omp parallel for
@@ -172,86 +171,18 @@ namespace segregation::multiscalar {
 
 				old_max_KL_div = max_KL_div;
 			}
+
+			distortion_coefs[i] /= normalization_coef;
 		}
 
 		return distortion_coefs;
 	}
 
-	template<typename Type, typename Type2=double>
-	Type get_normalization_factor(const std::vector<std::vector<Type>> &vects, const std::vector<std::vector<Type2>> &Xvalues={}) {
-		return get_normalization_factor(util::get_total_distribution(vects, Xvalues, vects[0].size()));
-	}
-
-	template<typename Type, typename Type2=double>
-	Type get_normalization_factor(const std::vector<Type> &total_distribution, const std::vector<std::vector<Type2>> &Xvalues={}, size_t N_steps=1000000) {
-		if (!Xvalues.empty()) {
-			N_steps = Xvalues[0].size();
-		}
-
-		std::vector<Type> total_distribution_copy = total_distribution;
-		std::sort(total_distribution_copy.begin(), total_distribution_copy.end());
-
-		auto distortion_factor = [&](const std::vector<Type2> &X_values_slice) {
-			std::vector<Type> acc( total_distribution.size(), 0);
-			std::vector<Type> traj(total_distribution.size());
-
-			Type normalization_factor = 0, old_diveregnce = 0;
-
-			size_t limit_idx = 0;
-			for (size_t i = 0; i < total_distribution.size(); ++i) {
-				size_t previous_limit_idx = limit_idx;
-				limit_idx = std::min(N_steps-1, (size_t)(limit_idx + total_distribution_copy[i]*N_steps));
-
-				for (size_t j = previous_limit_idx; j < limit_idx; ++j) {
-					acc[i] += 1;
-
-					for (int k = 0; k < total_distribution.size(); ++k) {
-						traj[k] = acc[k]/(j+1);
-					}
-
-					Type KL_div = ::util::math::get_KLdiv(traj, total_distribution_copy);
-					if (j == 0) {
-						old_diveregnce = KL_div;
-					}
-
-					Type delta_X = 1;
-					if (!X_values_slice.empty()) {
-						delta_X = X_values_slice[j+1] - X_values_slice[j];
-					}
-
-					normalization_factor += delta_X*(old_diveregnce + KL_div)/2;
-
-					old_diveregnce = KL_div;
-				}
-			}
-
-			return normalization_factor;
-		};
-
-
-		if (Xvalues.empty()) {
-			return distortion_factor(std::vector<Type2>({}));
-		} else {
-			Type max_normalization_factor = 0;
-
-			#pragma omp parallel for
-			for (int i = 0; i < Xvalues.size(); ++i) {
-				Type normalization_factor     = distortion_factor(Xvalues[i]);
-
-				#pragma omp critical 
-				     max_normalization_factor = std::max(max_normalization_factor, normalization_factor);
-			}
-
-			return max_normalization_factor;
-		}
-	}
-	
-
-	template<typename Type1, typename Type2=double>
+	template<typename Type1, typename Type2=double, typename Type3=double>
 	std::vector<Type1> get_distortion_coefs_fast(
 		const std::vector<std::vector<Type1>> &vects,
 		const std::function<std::pair<std::vector<size_t>, std::vector<Type2>>(size_t)> func,
-		const Type1 normalization_coef=1)
+		const Type3 normalization_coef=1.d)
 	{
 		std::vector<Type1> distortion_coefs(vects[0].size(), 0);
 
@@ -303,10 +234,10 @@ namespace segregation::multiscalar {
 		return distortion_coefs;
 	}
 
-	template<typename Type1, typename Type2=double>
+	template<typename Type1, typename Type2=double, typename Type3=double>
 	std::vector<Type1> get_distortion_coefs_fast(
 		const std::vector<std::vector<Type1>> &vects, const std::vector<std::vector<size_t>> &indexes,
-		const Type1 normalization_coef=1,
+		const Type3 normalization_coef=1.d,
 		const std::vector<std::vector<Type2>> &Xvalues={})
 	{
 		return get_normalized_distortion_coefs_fast(vects,
@@ -317,5 +248,74 @@ namespace segregation::multiscalar {
 					return std::pair<std::vector<size_t>, std::vector<Type2>>(indexes[i], Xvalues[i]);
 				}
 			}, normalization_coef);
+	}
+
+	template<typename Type1, typename Type2=double>
+	Type1 get_normalization_factor(const std::vector<Type1> &total_distribution, const std::vector<std::vector<Type2>> &Xvalues={}, size_t N_steps=1000000) {
+		if (!Xvalues.empty()) {
+			N_steps = Xvalues[0].size();
+		}
+
+		std::vector<Type1> total_distribution_copy = total_distribution;
+		std::sort(total_distribution_copy.begin(), total_distribution_copy.end());
+
+		auto distortion_factor = [&](const std::vector<Type2> &X_values_slice) {
+			std::vector<Type1> acc( total_distribution.size(), 0);
+			std::vector<Type1> traj(total_distribution.size());
+
+			Type1 normalization_factor = 0, old_diveregnce = 0;
+
+			size_t limit_idx = 0;
+			for (size_t i = 0; i < total_distribution.size(); ++i) {
+				size_t previous_limit_idx = limit_idx;
+				limit_idx = std::min(N_steps-1, (size_t)(limit_idx + total_distribution_copy[i]*N_steps));
+
+				for (size_t j = previous_limit_idx; j < limit_idx; ++j) {
+					acc[i] += 1;
+
+					for (int k = 0; k < total_distribution.size(); ++k) {
+						traj[k] = acc[k]/(j+1);
+					}
+
+					Type1 KL_div = ::util::math::get_KLdiv(traj, total_distribution_copy);
+					if (j == 0) {
+						old_diveregnce = KL_div;
+					}
+
+					Type1 delta_X = 1;
+					if (!X_values_slice.empty()) {
+						delta_X = X_values_slice[j+1] - X_values_slice[j];
+					}
+
+					normalization_factor += delta_X*(old_diveregnce + KL_div)/2;
+
+					old_diveregnce = KL_div;
+				}
+			}
+
+			return normalization_factor;
+		};
+
+
+		if (Xvalues.empty()) {
+			return distortion_factor(std::vector<Type2>({}));
+		} else {
+			Type1 max_normalization_factor = 0;
+
+			#pragma omp parallel for
+			for (int i = 0; i < Xvalues.size(); ++i) {
+				Type1 normalization_factor     = distortion_factor(Xvalues[i]);
+
+				#pragma omp critical 
+				     max_normalization_factor = std::max(max_normalization_factor, normalization_factor);
+			}
+
+			return max_normalization_factor;
+		}
+	}
+
+	template<typename Type1, typename Type2=double>
+	Type1 get_normalization_factor(const std::vector<std::vector<Type1>> &vects, const std::vector<std::vector<Type2>> &Xvalues={}) {
+		return get_normalization_factor(util::get_total_distribution(vects, Xvalues, vects[0].size()));
 	}
 }

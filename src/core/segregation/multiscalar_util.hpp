@@ -11,8 +11,10 @@ namespace segregation::multiscalar::util {
 		std::vector<Type> total_distribution(vects.size());
 
 		Type total = 0;
+		#pragma omp parallel for
 		for (size_t k = 0; k < vects.size(); ++k) {
 			total_distribution[k] = std::accumulate(vects[k].begin(), vects[k].end(), 0);
+			#pragma omp critical
 			total                += total_distribution[k];
 		}
 		for (size_t k = 0; k < vects.size(); ++k) {
@@ -20,6 +22,21 @@ namespace segregation::multiscalar::util {
 		}
 
 		return total_distribution;
+	}
+
+	template<typename Type>
+	std::vector<Type> get_total_population(const std::vector<std::vector<Type>> &vects) {
+		std::vector<Type> total_population(vects[0].size(), 0);
+
+		Type total = 0;
+		#pragma omp parallel for
+		for (size_t i = 0; i < vects[0].size(); ++i) {
+			for (size_t k = 0; k < vects.size(); ++k) {
+				total_population[i] += vects[k][i];
+			}
+		}
+
+		return total_population;
 	}
 	
 	template<typename Type>
