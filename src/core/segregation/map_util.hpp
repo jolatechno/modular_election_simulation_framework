@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../util/map_util.hpp"
 #include "../../util/math.hpp"
 #include "../../util/util.hpp"
 
@@ -10,10 +11,8 @@ namespace segregation::map::util {
 		std::vector<Type> distances(lat.size());
 
 		for (size_t j = 0; j < lat.size(); ++j) {
-			Type delta_lat = lat[idx] - lat[j];
-			Type delta_lon = lon[idx] - lon[j];
-
-			distances[j] = delta_lat*delta_lat + delta_lon*delta_lon;
+			distances[j] = std::max((Type)1,
+				::util::map::latLon_to_meter_distance(lat[idx], lon[idx], lat[j], lon[j]));
 		}
 
 		return distances;
@@ -36,12 +35,11 @@ namespace segregation::map::util {
 
 		for (size_t i = 0; i < lat.size(); ++i) {
 			for (size_t j = 0; j < i; ++j) {
-				Type delta_lat = lat[i] - lat[j];
-				Type delta_lon = lon[i] - lon[j];
-
-				distances[i][j] = delta_lat*delta_lat + delta_lon*delta_lon;
+				distances[i][j] = std::max((Type)1,
+					::util::map::latLon_to_meter_distance(lat[i], lon[i], lat[j], lon[j]));
 				distances[j][i] = distances[i][j];
 			}
+			distances[i][i] = 0;
 		}
 
 		return distances;

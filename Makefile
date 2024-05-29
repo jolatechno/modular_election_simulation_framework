@@ -5,7 +5,7 @@ par: test-par
 all+par: all par
 
 test:
-	g++ -O3 test.cpp -o test.out
+	g++ -std=c++20 -O3 test.cpp -o test.out
 
 test-par:
-	g++ -fopenmp -O3 test.cpp -o test-par.out
+	g++ -std=c++20 -fopenmp -O3 test.cpp -o test-par.out

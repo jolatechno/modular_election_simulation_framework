@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
+#include <numbers>
 
 
 namespace util::math {
@@ -103,5 +104,10 @@ namespace util::math {
 			results[i] *= dX;
 		}
 		return results;
+	}
+
+	template<typename Type>
+	Type deg2rad(Type deg) {
+		return deg*(std::numbers::pi_v<Type>/180);
 	}
 }
