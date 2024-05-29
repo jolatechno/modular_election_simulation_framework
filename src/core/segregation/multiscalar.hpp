@@ -272,17 +272,7 @@ namespace segregation::multiscalar {
 		/* Get the X value trajectory,
 		the "worst trajectory" is the one where we encounter the furthest 1st node,
 		then the furhtest 2nd node, etc... */
-		std::vector<Type2> worst_Xvalues(vects[0].size(), 0);
-		if (Xvalues.empty()) {
-			std::iota(worst_Xvalues.begin(), worst_Xvalues.end(), 0);
-		} else {
-			#pragma omp parallel for
-			for (size_t i = 0; i < Xvalues.size(); ++i) {
-				for (size_t j = 0; j < Xvalues[i].size(); ++j) {
-					worst_Xvalues[i] = std::max(worst_Xvalues[i], Xvalues[j][i]);
-				}
-			}
-		}
+		std::vector<Type2> worst_Xvalues = util::get_worst_Xvalues(Xvalues, vects[0].size());
 
 
 		Type1 normalization_coef = 0;
