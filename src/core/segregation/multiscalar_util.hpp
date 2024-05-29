@@ -25,7 +25,7 @@ namespace segregation::multiscalar::util {
 	}
 
 	template<typename Type>
-	std::vector<Type> get_total_population(const std::vector<std::vector<Type>> &vects) {
+	std::vector<Type> get_populations(const std::vector<std::vector<Type>> &vects) {
 		std::vector<Type> total_population(vects[0].size(), 0);
 
 		Type total = 0;

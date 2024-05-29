@@ -156,16 +156,14 @@ namespace segregation::multiscalar {
 
 		#pragma omp parallel for
 		for (size_t i = 0; i < KLdiv_trajectories.size(); ++i) {
-			Type old_max_KL_div = 0, max_KL_div = 0;
-			for (size_t j = KLdiv_trajectories[0].size()-1; j > 0; --j) {
+			double max_KL_div = 0, old_max_KL_div = KLdiv_trajectories[i].back();
+
+			for (long long int j = KLdiv_trajectories[0].size()-2; j >= 0; --j) {
 				max_KL_div = std::max(max_KL_div, KLdiv_trajectories[i][j]);
-				if (j == KLdiv_trajectories[0].size()-1) {
-					old_max_KL_div = max_KL_div;
-				}
 
 				Type delta_X = 1;
 				if (!Xvalues.empty()) {
-					delta_X = Xvalues[i][j] - Xvalues[i][j-1];
+					delta_X = Xvalues[i][j+1] - Xvalues[i][j];
 				}
 				distortion_coefs[i] += delta_X*(old_max_KL_div + max_KL_div)/2;
 
@@ -203,23 +201,23 @@ namespace segregation::multiscalar {
 			indexes_slice[0]        = indexes;
 			Xvalues_slice[0]        = Xvalues;
 
-			auto this_trajectories_  = segregation::multiscalar::get_trajectories(vects, indexes_slice);
+			auto this_trajectories_ = segregation::multiscalar::get_trajectories(vects, indexes_slice);
 
-			Type1 old_max_KL_div = 0, max_KL_div = 0;
-			for (size_t j = indexes.size()-1; j > 0; --j) {
+			for (size_t k = 0; k < vects.size(); ++k) {
+				traj[k] = this_trajectories_[k][0].back();
+			}
+			double max_KL_div = 0, old_max_KL_div = ::util::math::get_KLdiv(traj, total_distribution);
+
+			for (long long int j = indexes.size()-2; j >= 0; --j) {
 				for (size_t k = 0; k < vects.size(); ++k) {
 					traj[k] = this_trajectories_[k][0][j];
 				}
-				Type1 KL_div = ::util::math::get_KLdiv(traj, total_distribution);
-
-				max_KL_div = std::max(max_KL_div, KL_div);
-				if (j == indexes.size()-1) {
-					old_max_KL_div = max_KL_div;
-				}
+				double KL_div = ::util::math::get_KLdiv(traj, total_distribution);
+				max_KL_div   = std::max(max_KL_div, KL_div);
 
 				Type2 delta_X = 1;
 				if (!Xvalues.empty()) {
-					delta_X = Xvalues[j] - Xvalues[j-1];
+					delta_X = Xvalues[j+1] - Xvalues[j];
 				}
 				distortion_coefs[i] += delta_X*(old_max_KL_div + max_KL_div)/2;
 
@@ -251,71 +249,89 @@ namespace segregation::multiscalar {
 	}
 
 	template<typename Type1, typename Type2=double>
-	Type1 get_normalization_factor(const std::vector<Type1> &total_distribution, const std::vector<std::vector<Type2>> &Xvalues={}, size_t N_steps=1000000) {
-		if (!Xvalues.empty()) {
-			N_steps = Xvalues[0].size();
-		}
+	Type1 get_normalization_factor(const std::vector<std::vector<Type1>> &vects, const std::vector<std::vector<Type2>> &Xvalues={}) {
+		/* Get population of each node,
+		the "worst trajectory" would be if we encounter the smallest to largest population: */
+		std::vector<Type1> populations = util::get_populations(vects);
+		std::sort(populations.begin(), populations.end());
+		const Type1        total_pop   = std::accumulate(populations.begin(), populations.end(), (Type1)0);
 
+		/* Get the total distribution,
+		sort it from smallest to biggest proportion,
+		as the "worst trajectory" would be if we encounter the smallest minorities first */
+		std::vector<Type1> total_distribution = util::get_total_distribution(vects);
 		std::vector<Type1> total_distribution_copy = total_distribution;
 		std::sort(total_distribution_copy.begin(), total_distribution_copy.end());
 
-		auto distortion_factor = [&](const std::vector<Type2> &X_values_slice) {
-			std::vector<Type1> acc( total_distribution.size(), 0);
-			std::vector<Type1> traj(total_distribution.size());
+		/* Get the population of each minority: */
+		std::vector<Type1> total_distribution_pop = total_distribution_copy;
+		for (Type1 &total_distribution_pop_ : total_distribution_pop) {
+			total_distribution_pop_ *= total_pop;
+		}
 
-			Type1 normalization_factor = 0, old_diveregnce = 0;
-
-			size_t limit_idx = 0;
-			for (size_t i = 0; i < total_distribution.size(); ++i) {
-				size_t previous_limit_idx = limit_idx;
-				limit_idx = std::min(N_steps-1, (size_t)(limit_idx + total_distribution_copy[i]*N_steps));
-
-				for (size_t j = previous_limit_idx; j < limit_idx; ++j) {
-					acc[i] += 1;
-
-					for (int k = 0; k < total_distribution.size(); ++k) {
-						traj[k] = acc[k]/(j+1);
-					}
-
-					Type1 KL_div = ::util::math::get_KLdiv(traj, total_distribution_copy);
-					if (j == 0) {
-						old_diveregnce = KL_div;
-					}
-
-					Type1 delta_X = 1;
-					if (!X_values_slice.empty()) {
-						delta_X = X_values_slice[j+1] - X_values_slice[j];
-					}
-
-					normalization_factor += delta_X*(old_diveregnce + KL_div)/2;
-
-					old_diveregnce = KL_div;
+		/* Get the X value trajectory,
+		the "worst trajectory" is the one where we encounter the furthest 1st node,
+		then the furhtest 2nd node, etc... */
+		std::vector<Type2> worst_Xvalues(vects[0].size(), 0);
+		if (Xvalues.empty()) {
+			std::iota(worst_Xvalues.begin(), worst_Xvalues.end(), 0);
+		} else {
+			#pragma omp parallel for
+			for (size_t i = 0; i < Xvalues.size(); ++i) {
+				for (size_t j = 0; j < Xvalues[i].size(); ++j) {
+					worst_Xvalues[i] = std::max(worst_Xvalues[i], Xvalues[j][i]);
 				}
 			}
-
-			return normalization_factor;
-		};
-
-
-		if (Xvalues.empty()) {
-			return distortion_factor(std::vector<Type2>({}));
-		} else {
-			Type1 max_normalization_factor = 0;
-
-			#pragma omp parallel for
-			for (int i = 0; i < Xvalues.size(); ++i) {
-				Type1 normalization_factor     = distortion_factor(Xvalues[i]);
-
-				#pragma omp critical 
-				     max_normalization_factor = std::max(max_normalization_factor, normalization_factor);
-			}
-
-			return max_normalization_factor;
 		}
-	}
 
-	template<typename Type1, typename Type2=double>
-	Type1 get_normalization_factor(const std::vector<std::vector<Type1>> &vects, const std::vector<std::vector<Type2>> &Xvalues={}) {
-		return get_normalization_factor(util::get_total_distribution(vects, Xvalues, vects[0].size()));
+
+		Type1 normalization_coef = 0;
+
+		std::vector<Type1> placeholder(vects.size()), accumulated_pop(vects.size(), 0);
+		Type1 accumulated_total_pop = populations[0];
+		int current_idx = 0;
+
+
+		while (total_distribution_pop[current_idx] < populations[0]) {
+			accumulated_pop[current_idx] += total_distribution_pop[current_idx];
+			populations[0]               -= total_distribution_pop[current_idx];
+			total_distribution_pop[current_idx] = 0;
+			++current_idx;
+		}
+		accumulated_pop[       current_idx] += populations[0];
+		total_distribution_pop[current_idx] -= populations[0];
+
+		for (size_t k = 0; k < vects.size(); ++k) {
+			placeholder[k] = accumulated_pop[k]/accumulated_total_pop;
+		}
+		double KL_div = 0, old_KL_div = ::util::math::get_KLdiv(placeholder, total_distribution);
+
+
+		for (size_t i = 1; i < vects[0].size(); ++i) {
+			accumulated_total_pop += populations[i];
+
+			while (total_distribution_pop[current_idx] < populations[i] && current_idx < vects.size()-1) {
+				accumulated_pop[current_idx] += total_distribution_pop[current_idx];
+				populations[i]               -= total_distribution_pop[current_idx];
+				total_distribution_pop[current_idx] = 0;
+				++current_idx;
+			}
+			accumulated_pop[       current_idx] += populations[i];
+			total_distribution_pop[current_idx] -= populations[i];
+
+			for (size_t k = 0; k < vects.size(); ++k) {
+				placeholder[k] = accumulated_pop[k]/accumulated_total_pop;
+			}
+			KL_div = ::util::math::get_KLdiv(placeholder, total_distribution);
+
+			Type2 delta_X = worst_Xvalues[i] - worst_Xvalues[i-1];
+
+			normalization_coef += delta_X*(old_KL_div + KL_div)/2;
+
+			old_KL_div = KL_div;
+		}
+
+
+		return normalization_coef;
 	}
 }

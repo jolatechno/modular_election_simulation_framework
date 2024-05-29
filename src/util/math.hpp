@@ -107,7 +107,7 @@ namespace util::math {
 	}
 
 	template<typename Type>
-	Type deg2rad(Type deg) {
+	Type deg_to_rad(Type deg) {
 		return deg*(std::numbers::pi_v<Type>/180);
 	}
 }
