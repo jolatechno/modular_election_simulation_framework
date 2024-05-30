@@ -113,11 +113,10 @@ namespace segregation::multiscalar::util {
 		sort it from smallest to biggest proportion,
 		as the "worst trajectory" would be if we encounter the smallest minorities first */
 		std::vector<Type> total_distribution = util::get_total_distribution(vects);
-		std::vector<Type> total_distribution_copy = total_distribution;
-		std::sort(total_distribution_copy.begin(), total_distribution_copy.end());
+		std::sort(total_distribution.begin(), total_distribution.end());
 
 		/* Get the population of each minority: */
-		std::vector<Type> total_distribution_pop = total_distribution_copy;
+		std::vector<Type> total_distribution_pop = total_distribution;
 		for (Type &total_distribution_pop_ : total_distribution_pop) {
 			total_distribution_pop_ *= total_pop;
 		}
@@ -126,7 +125,7 @@ namespace segregation::multiscalar::util {
 		std::vector<Type> KL_div_traj(vects[0].size());
 
 		std::vector<Type> placeholder(vects.size()), accumulated_pop(vects.size(), 0);
-		Type accumulated_total_pop = populations[0];
+		Type accumulated_total_pop = 0;
 		int current_idx = 0;
 
 		for (size_t i = 0; i < vects[0].size(); ++i) {

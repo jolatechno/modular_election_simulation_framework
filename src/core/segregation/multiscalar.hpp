@@ -169,6 +169,9 @@ namespace segregation::multiscalar {
 
 				old_max_KL_div = max_KL_div;
 			}
+			if (!Xvalues.empty()) {
+				distortion_coefs[i] += Xvalues[i][0]*max_KL_div;
+			}
 
 			distortion_coefs[i] /= normalization_coef;
 		}
@@ -223,6 +226,9 @@ namespace segregation::multiscalar {
 
 				old_max_KL_div = max_KL_div;
 			}
+			if (!Xvalues.empty()) {
+				distortion_coefs[i] += Xvalues[0]*max_KL_div;
+			}
 		}
 
 		for (Type1 &distortion_coef : distortion_coefs) {
@@ -250,78 +256,14 @@ namespace segregation::multiscalar {
 
 	template<typename Type1, typename Type2=double>
 	Type1 get_normalization_factor(const std::vector<std::vector<Type1>> &vects, const std::vector<std::vector<Type2>> &Xvalues={}) {
-		/* Get population of each node,
-		the "worst trajectory" would be if we encounter the smallest to largest population: */
-		std::vector<Type1> populations = util::get_populations(vects);
-		std::sort(populations.begin(), populations.end());
-		const Type1        total_pop   = std::accumulate(populations.begin(), populations.end(), (Type1)0);
+		std::vector<Type2> worst_Xvalues         = util::get_worst_Xvalues(Xvalues, vects[0].size());
+		std::vector<Type1> worst_KLdiv_traj      = util::get_worst_KLdiv_trajectory(vects);
+		Type1              worst_distortion_coef = segregation::multiscalar::get_distortion_coefs_from_KLdiv(
+				std::vector<std::vector<Type1>>{worst_KLdiv_traj},
+				std::vector<std::vector<Type2>>{worst_Xvalues},
+				(Type1)1
+			)[0];
 
-		/* Get the total distribution,
-		sort it from smallest to biggest proportion,
-		as the "worst trajectory" would be if we encounter the smallest minorities first */
-		std::vector<Type1> total_distribution = util::get_total_distribution(vects);
-		std::vector<Type1> total_distribution_copy = total_distribution;
-		std::sort(total_distribution_copy.begin(), total_distribution_copy.end());
-
-		/* Get the population of each minority: */
-		std::vector<Type1> total_distribution_pop = total_distribution_copy;
-		for (Type1 &total_distribution_pop_ : total_distribution_pop) {
-			total_distribution_pop_ *= total_pop;
-		}
-
-		/* Get the X value trajectory,
-		the "worst trajectory" is the one where we encounter the furthest 1st node,
-		then the furhtest 2nd node, etc... */
-		std::vector<Type2> worst_Xvalues = util::get_worst_Xvalues(Xvalues, vects[0].size());
-
-
-		Type1 normalization_coef = 0;
-
-		std::vector<Type1> placeholder(vects.size()), accumulated_pop(vects.size(), 0);
-		Type1 accumulated_total_pop = populations[0];
-		int current_idx = 0;
-
-
-		while (total_distribution_pop[current_idx] < populations[0]) {
-			accumulated_pop[current_idx] += total_distribution_pop[current_idx];
-			populations[0]               -= total_distribution_pop[current_idx];
-			total_distribution_pop[current_idx] = 0;
-			++current_idx;
-		}
-		accumulated_pop[       current_idx] += populations[0];
-		total_distribution_pop[current_idx] -= populations[0];
-
-		for (size_t k = 0; k < vects.size(); ++k) {
-			placeholder[k] = accumulated_pop[k]/accumulated_total_pop;
-		}
-		double KL_div = 0, old_KL_div = ::util::math::get_KLdiv(placeholder, total_distribution);
-
-
-		for (size_t i = 1; i < vects[0].size(); ++i) {
-			accumulated_total_pop += populations[i];
-
-			while (total_distribution_pop[current_idx] < populations[i] && current_idx < vects.size()-1) {
-				accumulated_pop[current_idx] += total_distribution_pop[current_idx];
-				populations[i]               -= total_distribution_pop[current_idx];
-				total_distribution_pop[current_idx] = 0;
-				++current_idx;
-			}
-			accumulated_pop[       current_idx] += populations[i];
-			total_distribution_pop[current_idx] -= populations[i];
-
-			for (size_t k = 0; k < vects.size(); ++k) {
-				placeholder[k] = accumulated_pop[k]/accumulated_total_pop;
-			}
-			KL_div = ::util::math::get_KLdiv(placeholder, total_distribution);
-
-			Type2 delta_X = worst_Xvalues[i] - worst_Xvalues[i-1];
-
-			normalization_coef += delta_X*(old_KL_div + KL_div)/2;
-
-			old_KL_div = KL_div;
-		}
-
-
-		return normalization_coef;
+		return worst_distortion_coef;
 	}
 }
