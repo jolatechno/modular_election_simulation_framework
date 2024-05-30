@@ -255,8 +255,21 @@ namespace segregation::multiscalar {
 	}
 
 	template<typename Type1, typename Type2=double>
-	Type1 get_normalization_factor(const std::vector<std::vector<Type1>> &vects, const std::vector<std::vector<Type2>> &Xvalues={}) {
-		std::vector<Type2> worst_Xvalues         = util::get_worst_Xvalues(Xvalues, vects[0].size());
+	Type1 get_normalization_factor(const std::vector<std::vector<Type1>> &vects, const std::vector<std::vector<Type2>> &Xvalues={}, bool is_reversed_order=false) {
+		std::vector<Type2> worst_Xvalues         = util::get_worst_Xvalues(Xvalues, vects[0].size(), is_reversed_order);
+		std::vector<Type1> worst_KLdiv_traj      = util::get_worst_KLdiv_trajectory(vects);
+		Type1              worst_distortion_coef = segregation::multiscalar::get_distortion_coefs_from_KLdiv(
+				std::vector<std::vector<Type1>>{worst_KLdiv_traj},
+				std::vector<std::vector<Type2>>{worst_Xvalues},
+				(Type1)1
+			)[0];
+
+		return worst_distortion_coef;
+	}
+
+	template<typename Type1, typename Type2=double>
+	Type1 get_normalization_factor_pop(const std::vector<std::vector<Type1>> &vects) {
+		std::vector<Type2> worst_Xvalues         = util::get_worst_population_trajectory(vects);
 		std::vector<Type1> worst_KLdiv_traj      = util::get_worst_KLdiv_trajectory(vects);
 		Type1              worst_distortion_coef = segregation::multiscalar::get_distortion_coefs_from_KLdiv(
 				std::vector<std::vector<Type1>>{worst_KLdiv_traj},

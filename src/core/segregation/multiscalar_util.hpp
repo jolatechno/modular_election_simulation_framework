@@ -67,22 +67,27 @@ namespace segregation::multiscalar::util {
 	}
 
 	template<typename Type=double>
-	std::vector<Type> get_worst_Xvalues(const std::vector<std::vector<Type>> &Xvalues={}, size_t vect_size=0) {
+	std::vector<Type> get_worst_Xvalues(const std::vector<std::vector<Type>> &Xvalues={}, size_t vect_size=0, bool is_reversed_order=false) {
 		/* Get the X value trajectory,
 		the "worst trajectory" is the one where we encounter the furthest 1st node,
 		then the furhtest 2nd node, etc... */
 		if (vect_size == 0) {
 			vect_size = Xvalues.size();
 		}
-		std::vector<Type> worst_Xvalues(vect_size, 0);
+		std::vector<Type> worst_Xvalues(vect_size);
 
 		if (Xvalues.empty()) {
 			std::iota(worst_Xvalues.begin(), worst_Xvalues.end(), 0);
 		} else {
 			#pragma omp parallel for
 			for (size_t i = 0; i < Xvalues.size(); ++i) {
-				for (size_t j = 0; j < Xvalues[i].size(); ++j) {
-					worst_Xvalues[i] = std::max(worst_Xvalues[i], Xvalues[j][i]);
+				worst_Xvalues[i] = Xvalues[0][i];
+				for (size_t j = 1; j < Xvalues[i].size(); ++j) {
+					if (is_reversed_order) {
+						worst_Xvalues[i] = std::min(worst_Xvalues[i], Xvalues[j][i]);
+					} else {
+						worst_Xvalues[i] = std::max(worst_Xvalues[i], Xvalues[j][i]);
+					}
 				}
 			}
 		}
