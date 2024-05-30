@@ -72,7 +72,8 @@ namespace BPsimulation::random {
 			for (size_t node : nodes) {
 				if (network->neighbors(node).size() < n_attachment) {
 					while (idxs[node] < network->num_nodes()-1 && (
-						   node == sorted_indexes[node][idxs[node]] ||
+						   node == sorted_indexes[node][idxs[node]]                       ||
+						   network->are_neighbors(node, sorted_indexes[node][idxs[node]]) ||
 						   network->neighbors(sorted_indexes[node][idxs[node]]).size() >= n_attachment_max_))
 					{
 						++idxs[node];
