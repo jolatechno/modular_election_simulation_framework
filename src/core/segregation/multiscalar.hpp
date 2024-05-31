@@ -61,12 +61,16 @@ namespace segregation::multiscalar {
 	}
 
 	template<typename Type>
-	std::vector<std::vector<double>> get_KLdiv_trajectories(const std::vector<std::vector<std::vector<Type>>> &trajectories) {
+	std::vector<std::vector<double>> get_KLdiv_trajectories(const std::vector<std::vector<std::vector<Type>>> &trajectories, const std::vector<Type> &ref_distribution={}) {
 		std::vector<std::vector<double>> KLdiv_trajectories(trajectories[0].size(), std::vector<double>(trajectories[0][0].size()));
 
 		std::vector<Type> total_distribution(trajectories.size());
-		for (size_t k = 0; k < trajectories.size(); ++k) {
-			total_distribution[k] = trajectories[k][0].back();
+		if (ref_distribution.empty()) {
+			for (size_t k = 0; k < trajectories.size(); ++k) {
+				total_distribution[k] = trajectories[k][0].back();
+			}
+		} else {
+			total_distribution = ref_distribution;
 		}
 
 		std::vector<Type> placeholder(trajectories.size());
@@ -150,9 +154,9 @@ namespace segregation::multiscalar {
 		return distortion_coefs;
 	}
 
-	template<typename Type=double, typename Type2=double>
-	std::vector<Type> get_distortion_coefs_from_KLdiv(const std::vector<std::vector<double>> &KLdiv_trajectories, const std::vector<std::vector<Type>> &Xvalues={}, const Type2 &normalization_coef=1.d) {
-		std::vector<Type> distortion_coefs(KLdiv_trajectories.size(), 0);
+	template<typename Type1=double, typename Type2=double>
+	std::vector<Type1> get_distortion_coefs_from_KLdiv(const std::vector<std::vector<double>> &KLdiv_trajectories, const std::vector<std::vector<Type1>> &Xvalues={}, const Type2 &normalization_coef=1.d) {
+		std::vector<Type1> distortion_coefs(KLdiv_trajectories.size(), 0);
 
 		#pragma omp parallel for
 		for (size_t i = 0; i < KLdiv_trajectories.size(); ++i) {
@@ -161,7 +165,7 @@ namespace segregation::multiscalar {
 			for (long long int j = KLdiv_trajectories[0].size()-2; j >= 0; --j) {
 				max_KL_div = std::max(max_KL_div, KLdiv_trajectories[i][j]);
 
-				Type delta_X = 1;
+				Type1 delta_X = 1;
 				if (!Xvalues.empty()) {
 					delta_X = Xvalues[i][j+1] - Xvalues[i][j];
 				}
