@@ -7,14 +7,14 @@ namespace BPsimulation::core::agent {
 	class AgentTemplate {
 	public:
 		template<typename... Args>
-		void randomize(Args... args) {};
+		void randomize(Args... args) {}
 	};
 
 	template<class Agent>
 	class AgentInteractionFunctionTemplate {
 	public:
 		virtual void operator()(Agent &agent, std::vector<const Agent*> neighbors) const {}
-		virtual std::vector<const Agent*> list_of_possible_agents() const { return {NULL}; }
+		virtual std::vector<Agent> list_of_possible_agents() const { return {}; }
 	};
 
 	template<class Agent>

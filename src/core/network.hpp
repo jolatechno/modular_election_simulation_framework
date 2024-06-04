@@ -17,6 +17,7 @@ namespace BPsimulation {
 	class SocialNetwork {
 	private:
 		std::vector<std::pair<std::vector<size_t>, Agent>> agent_map;
+			std::vector<Agent> placeholder;;
 
 		template<class Agent2>
 		std::vector<const Agent2*> get_neighbors(size_t node) const {
@@ -103,14 +104,43 @@ namespace BPsimulation {
 		}
 
 		template<class Agent2>
-		inline void interact(const core::agent::AgentInteractionFunctionTemplate<Agent2> *interactionfunc) {
-			static_assert(std::is_convertible<Agent, Agent2>::value, "Error: Agent class is not compatible with the one used by AgentInteractionFunctionTemplate in interact !");
+		inline void interact_serial(const core::agent::AgentInteractionFunctionTemplate<Agent2> *interactionfunc) {
+			static_assert(std::is_convertible<Agent, Agent2>::value, "Error: Agent class is not compatible with the one used by AgentInteractionFunctionTemplate in interact_serial !");
 
 			std::vector<size_t> node_lists = nodes();
 			std::shuffle(node_lists.begin(), node_lists.end(), util::get_random_generator());
 
 			for (size_t node : node_lists) {
 				(*interactionfunc)((Agent2&)(*this)[node], get_neighbors<Agent2>(node));
+			}
+		}
+
+		template<class Agent2>
+		inline void interact_parallel(const core::agent::AgentInteractionFunctionTemplate<Agent2> *interactionfunc) {
+			static_assert(std::is_convertible<Agent, Agent2>::value, "Error: Agent class is not compatible with the one used by AgentInteractionFunctionTemplate in interact_parallel !");
+
+			placeholder.resize(num_nodes());
+			#pragma omp parallel for
+			for (size_t node = 0; node < num_nodes(); ++node) {
+				placeholder[node] = (*this)[node];
+			}
+			#pragma omp parallel for
+			for (size_t node = 0; node < num_nodes(); ++node) {
+				(*interactionfunc)((Agent2&)placeholder[node], get_neighbors<Agent2>(node));
+			}
+			#pragma omp parallel for
+			for (size_t node = 0; node < num_nodes(); ++node) {
+				(*this)[node] = placeholder[node];
+			}
+		}
+
+		template<class Agent2>
+		inline void interact(const core::agent::AgentInteractionFunctionTemplate<Agent2> *interactionfunc, bool parallel=false) {
+			static_assert(std::is_convertible<Agent, Agent2>::value, "Error: Agent class is not compatible with the one used by AgentInteractionFunctionTemplate in interact !");
+			if (parallel) {
+				interact_parallel(interactionfunc);
+			} else {
+				interact_serial(  interactionfunc);
 			}
 		}
 

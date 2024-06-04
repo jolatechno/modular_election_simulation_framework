@@ -23,10 +23,10 @@ namespace BPsimulation::implem {
 			candidate = distribution(util::get_random_generator()) < p;
 		}
 
-		std::vector<const voter*> list_of_possible_agents() {
-			std::vector<const voter*> possible_agents;
-			possible_agents.push_back(new voter(false));
-			possible_agents.push_back(new voter(true));
+		std::vector<voter> list_of_possible_agents() {
+			std::vector<voter> possible_agents;
+			possible_agents.push_back(voter(false));
+			possible_agents.push_back(voter(true));
 			return possible_agents;
 		}
 	};

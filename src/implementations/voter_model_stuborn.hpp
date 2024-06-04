@@ -25,12 +25,12 @@ namespace BPsimulation::implem {
 			stuborn   = distribution(util::get_random_generator()) < p_stuborn;
 		}
 
-		std::vector<const voter_stuborn*> list_of_possible_agents() {
-			std::vector<const voter_stuborn*> possible_agents;
-			possible_agents.push_back(new voter_stuborn(false, false));
-			possible_agents.push_back(new voter_stuborn(true,  false));
-			possible_agents.push_back(new voter_stuborn(false, true));
-			possible_agents.push_back(new voter_stuborn(true,  true));
+		std::vector<voter_stuborn> list_of_possible_agents() {
+			std::vector<voter_stuborn> possible_agents;
+			possible_agents.push_back(voter_stuborn(false, false));
+			possible_agents.push_back(voter_stuborn(true,  false));
+			possible_agents.push_back(voter_stuborn(false, true));
+			possible_agents.push_back(voter_stuborn(true,  true));
 			return possible_agents;
 		}
 	};

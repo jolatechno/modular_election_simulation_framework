@@ -31,14 +31,14 @@ namespace BPsimulation::implem {
 			Nvoter<N_candidates>::randomize(args...);
 		}
 
-		std::vector<const Nvoter_stuborn<N_candidates>*> list_of_possible_agents() {
-			std::vector<const Nvoter_stuborn<N_candidates>*> possible_agents;
+		std::vector<Nvoter_stuborn<N_candidates>> list_of_possible_agents() {
+			std::vector<Nvoter_stuborn<N_candidates>> possible_agents;
 
 			for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
-				possible_agents.push_back(new Nvoter_stuborn<N_candidates>(icandidate, false));
+				possible_agents.push_back(Nvoter_stuborn<N_candidates>(icandidate, false));
 			}
 			for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
-				possible_agents.push_back(new Nvoter_stuborn<N_candidates>(icandidate, true));
+				possible_agents.push_back(Nvoter_stuborn<N_candidates>(icandidate, true));
 			}
 
 			return possible_agents;

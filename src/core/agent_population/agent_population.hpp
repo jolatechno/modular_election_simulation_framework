@@ -8,17 +8,27 @@
 namespace BPsimulation::core::agent::population {
 	template<class Agent>
 	class AgentPopulation : public AgentTemplate {
+	private:
+		std::vector<Agent> agent_types_;
+
 	public:
-		const std::vector<const Agent*> agent_types = []() {
-			Agent* mock_agent = new Agent();
-			return mock_agent->list_of_possible_agents();
-		}();
+		AgentPopulation() {
+			Agent* mock_agent   = new Agent();
+			       agent_types_ = mock_agent->list_of_possible_agents();
+			delete mock_agent;
+
+			proportions.resize(agent_types().size());
+		}
+
+		inline const std::vector<Agent> &agent_types() const {
+			return agent_types_;
+		}
 
 		size_t population = 1;
-		std::vector<double> proportions = std::vector<double>(agent_types.size());
+		std::vector<double> proportions;
 
 		void randomize(const std::vector<double> &mean_proportions, const std::vector<double> &proportions_var) {
-			for (int i = 0; i < agent_types.size(); ++i) {
+			for (int i = 0; i < agent_types().size(); ++i) {
 				std::normal_distribution<double> distribution(mean_proportions[i], proportions_var[i]);
 				proportions[i] = std::max(1e-9d, distribution(util::get_random_generator()));
 			}
@@ -26,8 +36,8 @@ namespace BPsimulation::core::agent::population {
 			renormalize();
 		}
 		void randomize(const std::vector<double> &mean_proportions) {
-			std::vector<double> proportions_var(agent_types.size());
-			for (int ifield = 0; ifield < agent_types.size(); ++ifield) {
+			std::vector<double> proportions_var(agent_types().size());
+			for (int ifield = 0; ifield < agent_types().size(); ++ifield) {
 				proportions_var[ifield] = mean_proportions[ifield]/2;
 			}
 			randomize(mean_proportions, proportions_var);
@@ -152,8 +162,8 @@ namespace BPsimulation::core::agent::population {
 		};
 		election::ElectionResultTemplate* operator()(const AgentPopulation<Agent>& agent) const {
 			election::ElectionResultTemplate *result = get_neutral_election_result();
-			for (int i = 0; i < agent.agent_types.size(); ++i) {
-				election::ElectionResultTemplate *type_result = (*base_election_func)(*agent.agent_types[i]);
+			for (int i = 0; i < agent.agent_types().size(); ++i) {
+				election::ElectionResultTemplate *type_result = (*base_election_func)(agent.agent_types()[i]);
 
 				int agent_type_population = int(agent.population*agent.proportions[i]);
 				(*type_result) *= agent_type_population;

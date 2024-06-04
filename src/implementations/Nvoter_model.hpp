@@ -32,11 +32,11 @@ namespace BPsimulation::implem {
 			}
 		}
 
-		std::vector<const Nvoter<N_candidates>*> list_of_possible_agents() {
-			std::vector<const Nvoter<N_candidates>*> possible_agents;
+		std::vector<Nvoter<N_candidates>> list_of_possible_agents() {
+			std::vector<Nvoter<N_candidates>> possible_agents;
 
 			for (int icandidate = 0; icandidate < N_candidates; ++icandidate) {
-				possible_agents.push_back(new Nvoter<N_candidates>(icandidate));
+				possible_agents.push_back(Nvoter<N_candidates>(icandidate));
 			}
 
 			return possible_agents;

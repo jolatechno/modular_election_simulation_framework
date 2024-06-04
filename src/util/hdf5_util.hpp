@@ -4,6 +4,25 @@
 
 
 namespace util::hdf5io {
+	H5::H5File open_truncate_if_needed(const char* filename) {
+		H5::H5File file(filename, H5F_ACC_TRUNC);
+		file.close();
+
+		file.openFile(filename, H5F_ACC_RDWR);
+		return file;
+	}
+
+	void H5flush_and_clean(H5::H5File &file, bool close_reopen=false) {
+		H5Fflush(file.getId(), H5F_SCOPE_GLOBAL);
+		H5garbage_collect();
+
+		if (close_reopen) {
+			auto filename = file.getFileName();
+			file.close();
+			file.openFile(filename, H5F_ACC_RDWR);
+		}
+	}
+
 	const H5::DataType &H5DataType(bool X) {
 		return H5::PredType::NATIVE_CHAR;
 	}
@@ -41,6 +60,7 @@ namespace util::hdf5io {
 	    H5::DataSet   dataset   = group.createDataSet(data_name, H5DataType(data), dataspace);
 
 	    dataset.write(&data, H5DataType(data));
+	    dataset.close();
 	}
 	template<class Type>
 	Type H5ReadSingle(H5::Group &group, const char* data_name) {
@@ -60,6 +80,7 @@ namespace util::hdf5io {
 	    H5::DataSet   dataset   = group.createDataSet(data_name, H5DataType(data[0]), dataspace);
 
 	    dataset.write(data.data(), H5DataType(data[0]));
+	    dataset.close();
 	}
 	template<class Type>
 	void H5ReadVector(H5::Group &group, std::vector<Type> &data, const char* data_name) {
@@ -71,6 +92,7 @@ namespace util::hdf5io {
 
 	    data.resize(dims[0]);
 	    dataset.read(data.data(), H5DataType(data[0]), dataspace);
+	    dataset.close();
 	}
 
 	template<class Type>

@@ -18,6 +18,8 @@ namespace BPsimulation::io {
 			neighbors.push_back(network->neighbors(node));
 		}
 		util::hdf5io::H5WriteIrregular2DVector(group, neighbors, "neighbors");
+
+		group.close();
 	}
 	template<class Agent>
 	auto read_network_from_file(SocialNetwork<Agent> *network, H5::H5File &file, const char* group_name="/network") {
@@ -34,6 +36,8 @@ namespace BPsimulation::io {
 				network->add_connection_single_way(node, neighbor);
 			}
 		}
+
+		group.close();
 	}
 
 
@@ -135,7 +139,10 @@ namespace BPsimulation::io {
 				break;
 			}
 		}
+
+		group.close();
 	}
+
 	template<class Agent, class Agent2>
 	void read_agent_states_from_file(SocialNetwork<Agent> *network, const core::agent::AgentSerializerTemplate<Agent2> *serializer,
 		H5::H5File &file, const char* group_name="/states")
@@ -216,18 +223,23 @@ namespace BPsimulation::io {
 
 			serializer->read((Agent2&)(*network)[node], values);
 		}
+
+		group.close();
 	}
 
 
 	void write_counties_to_file(const std::vector<std::vector<size_t>> &counties, H5::H5File &file, const char* group_name="/counties") {
 		H5::Group group = file.createGroup(group_name);
 		util::hdf5io::H5WriteIrregular2DVector(group, counties, "counties");
+		group.close();
 	}
+
 	void read_counties_from_file(std::vector<std::vector<size_t>> &counties, H5::H5File &file, const char* group_name="/counties") {
 		counties.clear();
 
 		H5::Group group = file.openGroup(group_name);
 		util::hdf5io::H5ReadIrregular2DVector(group, counties, "counties");
+		group.close();
 	}
 
 
@@ -266,7 +278,10 @@ namespace BPsimulation::io {
 				break;
 			}
 		}
+
+		group.close();
 	}
+
 	void write_election_results_to_file(const std::vector<core::election::ElectionResultTemplate*> &results, const core::election::ElectionResultSerializerTemplate *serializer,
 		H5::H5File &file, const char* group_name="/election_results")
 	{
@@ -276,5 +291,7 @@ namespace BPsimulation::io {
 			std::string this_election_group_name = std::string(group_name) + "/election_result_" + std::to_string(i);
 			write_election_result_to_file(results[i], serializer, file, this_election_group_name.c_str());
 		}
+
+		group.close();
 	}
 }
