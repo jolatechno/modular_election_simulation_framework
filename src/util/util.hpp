@@ -53,6 +53,12 @@ namespace util {
 			return random_generators_;
 		}();
 	}
+	
+	void set_generator_seed(size_t seed) {
+		for (int i = 0; i < parallel::num_threads; ++i) {
+			random_generators[i].seed(seed);
+		}
+	}
 
 	inline std::mt19937& get_random_generator() {
 	#if defined(_OPENMP)

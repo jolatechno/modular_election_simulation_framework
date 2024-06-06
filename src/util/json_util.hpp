@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdio.h>
 #include <stdexcept>
 #include <json/value.h>
 #include <json/json.h>
@@ -22,7 +23,9 @@ namespace util::json {
     	}
 
 		if (config_name.empty()) {
-			return parsedJson;
+			auto keys = parsedJson.getMemberNames();
+			std::cout << "no config selected, selecting \"" << keys[0] << "\"" << std::endl;
+			return parsedJson[keys[0]];
 		} else {
 			return parsedJson[config_name.c_str()];
 		}
