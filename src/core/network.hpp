@@ -16,21 +16,40 @@ namespace BPsimulation {
 	template<class Agent>
 	class SocialNetwork {
 	private:
-		std::vector<std::pair<std::vector<size_t>, Agent>> agent_map;
-			std::vector<Agent> placeholder;;
+		std::vector<Agent>               agent_vect, placeholder;
+		std::vector<std::vector<size_t>> connection_matrix; 
+		std::vector<std::vector<double>> weight_matrix; 
+
 
 		template<class Agent2>
-		std::vector<const Agent2*> get_neighbors(size_t node) const {
+		std::vector<std::pair<const Agent2*, double>> get_neighbors(size_t node) const {
 			static_assert(std::is_convertible<Agent, Agent2>::value, "Error: Agent class is not compatible with the one seeked in get_neighbors (private function of SocialNetwork) !");
 
-			std::vector<const Agent2*> vec;
+			std::vector<std::pair<const Agent2*, double>> vec;
 
 			std::vector<size_t> neighbor_list = neighbors(node);
-			for (size_t neighbor : neighbor_list) {
-				vec.push_back((const Agent2*)&(*this)[neighbor]);
+			for (size_t neighbor_idx = 0; neighbor_idx < neighbor_list.size(); ++neighbor_idx) {
+				size_t neighbor = neighbor_list[neighbor_idx];
+
+				vec.push_back(std::pair<const Agent2*, double>{
+					(const Agent2*)&(*this)[neighbor],
+					weight_matrix[node][neighbor_idx]
+				});
 			}
 
 			return vec;
+		}
+
+		std::pair<bool, size_t> get_neighbor_idx(size_t i, size_t j) const {
+			std::vector<size_t> i_neighbors = neighbors(i);
+
+			auto ptr = std::find(i_neighbors.begin(), i_neighbors.end(), j);
+			if (ptr == i_neighbors.end()) {
+				return {false, 0};
+			} else {
+				size_t idx = std::distance(i_neighbors.begin(), ptr);
+				return {true, idx};
+			}
 		}
 	public:
 		SocialNetwork(size_t num_nodes=0) {
@@ -38,10 +57,12 @@ namespace BPsimulation {
 		}
 
 		inline size_t num_nodes() const {
-			return agent_map.size();
+			return agent_vect.size();
 		}
 		inline void resize(size_t num_nodes) {
-			agent_map.resize(num_nodes);
+			agent_vect.resize(       num_nodes);
+			connection_matrix.resize(num_nodes);
+			weight_matrix.resize(    num_nodes);
 		}
 		inline std::vector<size_t> nodes() const {
 			std::vector<size_t> nodes(num_nodes());
@@ -49,42 +70,64 @@ namespace BPsimulation {
 			return nodes;
 		}
 		inline Agent& operator[](size_t node) {
-			return agent_map[node].second;
+			return agent_vect[node];
 		}
 		inline const Agent& operator[](size_t node) const {
-			return agent_map[node].second;
+			return agent_vect[node];
 		}
 
 		inline const std::vector<size_t>& neighbors(size_t node) const {
-			return agent_map[node].first;
+			return connection_matrix[node];
+		}
+		inline const double& connection_weight(size_t i, size_t j) const {
+			if (i == j) {
+				return 0;
+			}
+
+			auto [are_connected, idx] = get_neighbor_idx(i, j);
+			if (are_connected) {
+				return weight_matrix[i][idx];
+			} else {
+				return 0;
+			}
 		}
 
 		inline bool are_neighbors(size_t i, size_t j) const {
 			if (i == j) {
 				return true;
 			}
-			auto i_neighbors = neighbors(i);
-			return std::find(i_neighbors.begin(), i_neighbors.end(), j) != i_neighbors.end();
+			auto [are_connected, idx] = get_neighbor_idx(i, j);
+			return are_connected;
 		}
-		inline void add_connection_single_way(size_t i, size_t j) {
+		inline void add_connection_single_way(size_t i, size_t j, double weight=1.d) {
 			if (!are_neighbors(i, j)) {
-				agent_map[i].first.push_back(j);
+				connection_matrix[i].push_back(j);
+				weight_matrix[    i].push_back(weight);
 			}
 		}
-		inline void add_connection(size_t i, size_t j) {
-			add_connection_single_way(i, j);
-			add_connection_single_way(j, i);
+		inline void add_connection(size_t i, size_t j, double weight=1.d) {
+			add_connection_single_way(i, j, weight);
+			add_connection_single_way(j, i, weight);
+		}
+		inline void add_connection(size_t i, size_t j, double weight_ij, double weight_ji) {
+			add_connection_single_way(i, j, weight_ij);
+			add_connection_single_way(j, i, weight_ji);
 		}
 
 		inline void remove_connection_single_way(size_t i, size_t j) {
-			std::remove(agent_map[i].first.begin(), agent_map[i].first.end(), j);
+			auto [are_connected, idx] = get_neighbor_idx(i, j);
+			if (are_connected) {
+				connection_matrix[i].erase(connection_matrix[i].begin() + idx);
+				weight_matrix[    i].erase(weight_matrix[    i].begin() + idx);
+			}
 		}
 		inline void remove_connection(size_t i, size_t j) {
 			remove_connection_single_way(i, j);
 			remove_connection_single_way(j, i);
 		}
 		inline void clear_connections(size_t i) {
-			agent_map[i].first.clear();
+			connection_matrix[i].clear();
+			weight_matrix[    i].clear();
 		}
 		inline void clear_connections() {
 			for (size_t node = 0; node < num_nodes(); ++node) {

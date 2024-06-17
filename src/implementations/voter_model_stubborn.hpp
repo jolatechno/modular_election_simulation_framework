@@ -37,12 +37,10 @@ namespace BPsimulation::implem {
 
 	class voter_stubborn_interaction_function : public core::agent::AgentInteractionFunctionTemplate<voter_stubborn> {
 	public:
-		void operator()(voter_stubborn &agent, std::vector<const voter_stubborn*> neighbors) const {
+		void operator()(voter_stubborn &agent, std::vector<std::pair<const voter_stubborn*, double>> neighbors) const {
 			if (!agent.stubborn) {
-				std::uniform_int_distribution<int> distribution(0, neighbors.size()-1);
-				int neighbor_idx = distribution(util::get_random_generator());
-
-				agent.candidate = neighbors[neighbor_idx]->candidate;
+				const voter_stubborn* neighbor = random_select(neighbors);
+				agent.candidate = neighbor->candidate;
 			}
 		}
 	};

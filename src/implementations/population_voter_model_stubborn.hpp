@@ -33,11 +33,11 @@ namespace BPsimulation::implem {
 		population_voter_stubborn_interaction_function(size_t N_select_) : N_select(N_select_) {}
 
 		void operator()(core::agent::population::AgentPopulation<voter_stubborn> &agent,
-			std::vector<const core::agent::population::AgentPopulation<voter_stubborn>*> neighbors) const
+			std::vector<std::pair<const core::agent::population::AgentPopulation<voter_stubborn>*, double>> neighbors) const
 		{
 			if (agent.population > 0) {
-				std::vector<double> self_selected         = agent.random_select(N_select, {2, 3});
-				std::vector<double> neighborhood_selected = agent.random_select(N_select, neighbors);
+				std::vector<double> self_selected         = agent.random_select_self(N_select, {2, 3});
+				std::vector<double> neighborhood_selected = agent.random_select(     N_select, neighbors, false);
 
 				agent.integrate_population_variation({
 					neighborhood_selected[0] + neighborhood_selected[2] - self_selected[0],

@@ -82,33 +82,47 @@ namespace BPsimulation::core::agent::population {
 		}
 
 		template<class Agent2>
-		std::vector<double> random_select(size_t N_select, const std::vector<const Agent2*> neighbors, const std::vector<size_t> &unselectable={}) const {
+		std::vector<double> random_select(
+			size_t N_select,
+			const std::vector<std::pair<const Agent2*, double>> neighbors,
+			const bool include_self=false,
+			const std::vector<size_t> &unselectable={}
+		) const {
 			static_assert(std::is_convertible<Agent2, AgentPopulation<Agent>>::value, "Error: Agent class is not compatible with the one used by AgentPopulationInteractionFunctionTemplate in random_select !");
-			if (neighbors.empty()) {
+			if (neighbors.empty() && !include_self) {
 				Agent* mock_agent = new Agent();
 				size_t num_fields = mock_agent->list_of_possible_agents().size();
 
 				return std::vector<double>(num_fields, 0);
 			}
 
-			size_t num_fields = neighbors[0]->proportions.size();
+			size_t num_fields;
+			if (include_self) {
+				num_fields = proportions.size();
+			} else {
+				num_fields = neighbors[0].first->proportions.size();
+			}
 
 			std::vector<char> is_selectable(num_fields, true);
 			for (size_t unselectable_field : unselectable) {
 				is_selectable[unselectable_field] = false;
 			}
 
-			std::vector<double> proportions(num_fields, 0);
-			double population=0.d, normalization_factor=0.d;
+			std::vector<double> accumulated_proportions(num_fields, 0);
+			double accumulated_population=0.d, normalization_factor=0.d;
 			for (size_t ifield = 0; ifield < num_fields; ++ifield) {
 				if (is_selectable[ifield]) {
-					for (const Agent2 *neighbor : neighbors) {
-						proportions[ifield] += neighbor->proportions[ifield];
-
-						population += neighbor->population*neighbor->proportions[ifield];
+					if (include_self) {
+						accumulated_proportions[ifield] += proportions[ifield];
+						accumulated_population          += population*proportions[ifield];
 					}
 
-					normalization_factor += proportions[ifield];
+					for (const auto [neighbor, weight] : neighbors) {
+						accumulated_proportions[ifield] += weight*neighbor->proportions[ifield];
+						accumulated_population          += weight*neighbor->population*neighbor->proportions[ifield];
+					}
+
+					normalization_factor += accumulated_proportions[ifield];
 				}
 			}
 
@@ -117,7 +131,7 @@ namespace BPsimulation::core::agent::population {
 				return selected;
 			}
 
-			long int to_select = std::min((long int)N_select, (long int)population);
+			long int to_select = std::min((long int)N_select, (long int)accumulated_population);
 			if (to_select == 0) {
 				return selected;
 			}
@@ -132,21 +146,21 @@ namespace BPsimulation::core::agent::population {
 					selected[ifield] = to_select;
 				} else if (is_selectable[ifield]) {
 					double select_proportion = std::max(0.d, std::min(1.d,
-						proportions[ifield]/normalization_factor));
+						accumulated_proportions[ifield]/normalization_factor));
 
 					std::binomial_distribution<long int> distribution(to_select, select_proportion);
 					long int this_selected = distribution(util::get_random_generator());
 					selected[ifield]       = (double)this_selected;
 
 					to_select            -= this_selected;
-					normalization_factor -= proportions[ifield];
+					normalization_factor -= accumulated_proportions[ifield];
 				}
 			}
 
 			return selected;
 		}
-		inline std::vector<double> random_select(size_t N_select, const std::vector<size_t> &unselectable={}) const {
-			return random_select(N_select, std::vector<const AgentPopulation<Agent>*>{this}, unselectable);
+		inline std::vector<double> random_select_self(size_t N_select, const std::vector<size_t> &unselectable={}) const {
+			return random_select(N_select, std::vector<std::pair<const AgentPopulation<Agent>*, double>>{}, true, unselectable);
 		}
 	};
 

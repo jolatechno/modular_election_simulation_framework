@@ -75,11 +75,9 @@ namespace BPsimulation::implem {
 
 	class voter_interaction_function : public core::agent::AgentInteractionFunctionTemplate<voter> {
 	public:
-		void operator()(voter &agent, std::vector<const voter*> neighbors) const {
-			std::uniform_int_distribution<int> distribution(0, neighbors.size()-1);
-			int neighbor_idx = distribution(util::get_random_generator());
-
-			agent.candidate = neighbors[neighbor_idx]->candidate;
+		void operator()(voter &agent, std::vector<std::pair<const voter*, double>> neighbors) const {
+			const voter* neighbor = random_select(neighbors);
+			agent.candidate = neighbor->candidate;
 		}
 	};
 
