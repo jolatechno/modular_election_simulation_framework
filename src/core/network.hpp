@@ -79,17 +79,57 @@ namespace BPsimulation {
 		inline const std::vector<size_t>& neighbors(size_t node) const {
 			return connection_matrix[node];
 		}
-		inline const double& connection_weight(size_t i, size_t j) const {
-			if (i == j) {
-				return 0;
-			}
 
+		inline double& get_connection_weight_ref(size_t i, size_t j) {
+			auto [are_connected, idx] = get_neighbor_idx(i, j);
+
+			if (!are_connected) {
+				throw std::invalid_argument("in \"get_connection_weight_ref\", i and j aren't neighors, can't return reference");
+			}
+			return weight_matrix[i][idx];
+		}
+		inline const double get_connection_weight(size_t i, size_t j) const {
 			auto [are_connected, idx] = get_neighbor_idx(i, j);
 			if (are_connected) {
 				return weight_matrix[i][idx];
 			} else {
 				return 0;
 			}
+		}
+		inline void set_connection_weight_one_way(size_t i, size_t j, double weight) {
+			auto [are_connected, idx] = get_neighbor_idx(i, j);
+			if (are_connected) {
+				weight_matrix[i][idx] = weight;
+			} else {
+				connection_matrix[i].push_back(j);
+				weight_matrix[    i].push_back(weight);
+			}
+		}
+		inline void set_connection_weight(size_t i, size_t j, double weight_ij, double weight_ji) {
+			set_connection_weight_one_way(i, j, weight_ij);
+			set_connection_weight_one_way(j, i, weight_ji);
+		}
+		inline void set_connection_weight(size_t i, size_t j, double weight) {
+			set_connection_weight(i, j, weight, weight);
+		}
+		inline double increment_connection_weight_one_way(size_t i, size_t j, double weight) {
+			auto [are_connected, idx] = get_neighbor_idx(i, j);
+			if (are_connected) {
+				weight_matrix[i][idx] += weight;
+				return weight_matrix[i][idx];
+			} else {
+				connection_matrix[i].push_back(j);
+				weight_matrix[    i].push_back(weight);
+				return weight;
+			}
+		}
+		inline std::pair<double, double> increment_connection_weight(size_t i, size_t j, double weight_ij, double weight_ji) {
+			double updated_weight_ij = increment_connection_weight_one_way(i, j, weight_ij);
+			double updated_weight_ji = increment_connection_weight_one_way(j, i, weight_ji);
+			return {updated_weight_ij, updated_weight_ji};
+		}
+		inline std::pair<double, double> increment_connection_weight(size_t i, size_t j, double weight) {
+			return increment_connection_weight(i, j, weight, weight);
 		}
 
 		inline bool are_neighbors(size_t i, size_t j) const {
