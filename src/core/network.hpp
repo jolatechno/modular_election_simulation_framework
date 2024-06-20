@@ -174,6 +174,19 @@ namespace BPsimulation {
 				clear_connections(node);
 			}
 		}
+		inline void cleanup_connections(size_t i, double epsilon) {
+			for (long long int idx = weight_matrix.size()-1; idx > 0; --idx) {
+				if (std::abs(weight_matrix[i][idx]) <= epsilon) {
+					connection_matrix[i].erase(connection_matrix[i].begin() + idx);
+					weight_matrix[    i].erase(weight_matrix[    i].begin() + idx);
+				}
+			}
+		}
+		inline void cleanup_connections(double epsilon) {
+			for (size_t node = 0; node < num_nodes(); ++node) {
+				cleanup_connections(node, epsilon);
+			}
+		}
 
 		inline size_t degree(size_t node) const {
 			return neighbors(node).size();
